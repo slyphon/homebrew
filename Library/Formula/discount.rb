@@ -1,15 +1,13 @@
 require 'formula'
 
 class Discount <Formula
-  url 'http://github.com/Orc/discount/tarball/v1.6.6'
+  url 'http://github.com/Orc/discount/tarball/v2.0'
   homepage 'http://www.pell.portland.or.us/~orc/Code/markdown/'
-  md5 'c05cb804bdf5013aea2e816e5d2233d7'
+  md5 'd911db94ba31a292940a80fdf0982302'
 
   def install
     system "./configure.sh", "--prefix=#{prefix}", "--mandir=#{man}",
-                             "--enable-dl-tag", "--enable-pandoc-header",
-                             "--enable-superscript", "--relaxed-emphasis",
-                             "--enable-div", "--enable-alpha-list"
+                             "--enable-dl-tag", "--enable-all-features"
     bin.mkdir
     lib.mkdir
     include.mkdir
