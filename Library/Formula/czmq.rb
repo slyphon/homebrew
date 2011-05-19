@@ -7,6 +7,7 @@ class Czmq < Formula
 
   # depends_on 'cmake'
   depends_on 'ossp-uuid'
+  depends_on 'zeromq'
 
   def install
     system "./configure", "--disable-debug", "--disable-dependency-tracking",
