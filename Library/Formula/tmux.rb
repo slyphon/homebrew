@@ -5,9 +5,18 @@ class Tmux < Formula
   md5 '3e37db24aa596bf108a0442a81c845b3'
   homepage 'http://tmux.sourceforge.net'
 
+  head 'https://tmux.svn.sourceforge.net/svnroot/tmux/trunk'
+
   depends_on 'libevent'
 
+  if ARGV.build_head? and MacOS.xcode_version >= "4.3"
+    depends_on "automake" => :build
+    depends_on "libtool" => :build
+  end
+
   def install
+    system "sh", "autogen.sh" if ARGV.build_head?
+
     ENV.append "LDFLAGS", '-lresolv'
     system "./configure", "--disable-dependency-tracking",
                           "--prefix=#{prefix}", "--sysconfdir=#{etc}"
