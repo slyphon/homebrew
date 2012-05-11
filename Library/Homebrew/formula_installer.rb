@@ -182,7 +182,12 @@ class FormulaInstaller
 
     args = ARGV.clone
     unless args.include? '--fresh'
-      args.concat tab.used_options unless tab.nil?
+      unless tab.nil?
+        args.concat tab.used_options
+        # FIXME: enforce the download of the non-bottled package
+        # in the spawned Ruby process.
+        args << '--build-from-source'
+      end
       args.uniq! # Just in case some dupes were added
     end
 
@@ -327,11 +332,12 @@ class FormulaInstaller
   def check_non_libraries
     return unless File.exist? f.lib
 
-    valid_libraries = %w(.a .dylib .framework .la .so)
+    valid_libraries = %w(.a .dylib .framework .la .o .so)
+    allowed_non_libraries = %w(.jar .prl .pm)
     non_libraries = f.lib.children.select do |g|
       next if g.directory?
       extname = g.extname
-      (extname != ".jar") and (not valid_libraries.include? extname)
+      (not allowed_non_libraries.include? extname) and (not valid_libraries.include? extname)
     end
 
     unless non_libraries.empty?
