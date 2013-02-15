@@ -3,6 +3,10 @@ module ArchitectureListExtension
     self.include? :i386 and self.include? :x86_64
   end
 
+  def ppc?
+    self.include? :ppc7400 or self.include? :ppc64
+  end
+
   def remove_ppc!
     self.delete :ppc7400
     self.delete :ppc64
@@ -100,14 +104,14 @@ module MachO
   end
 
   def dylib?
-    mach_data.map{ |m| m.fetch :type }.include? :dylib
+    mach_data.any? { |m| m.fetch(:type) == :dylib }
   end
 
   def mach_o_executable?
-    mach_data.map{ |m| m.fetch :type }.include? :executable
+    mach_data.any? { |m| m.fetch(:type) == :executable }
   end
 
   def mach_o_bundle?
-    mach_data.map{ |m| m.fetch :type }.include? :bundle
+    mach_data.any? { |m| m.fetch(:type) == :bundle }
   end
 end

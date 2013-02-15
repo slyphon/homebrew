@@ -2,8 +2,10 @@ require 'formula'
 
 class Formula
   def test_mirror mirror
-    url, specs = mirror.values_at :url, :specs
-    downloader = download_strategy.new url, name, version, specs
+    # Checksum verification is done against @active_spec, so we need only
+    # populate the stub spec object with the mirror URL.
+    spec = SoftwareSpec.new(mirror)
+    downloader = download_strategy.new(name, spec)
 
     # Force the downloader to attempt the download by removing the tarball if
     # it is allready cached.
@@ -26,8 +28,7 @@ module Homebrew extend self
     mirror_check_usage = <<-EOS
 Usage: brew mirror-check <formulae ...>
 
-Cycle through mirror lists for each formula, attempt a download and validate
-MD5 sums.
+Cycle through mirror lists for each formula, attempt a download and validate file hashes.
     EOS
 
     if ARGV.empty?

@@ -5,17 +5,17 @@ class Mtr < Formula
   url 'ftp://ftp.bitwizard.nl/mtr/mtr-0.82.tar.gz'
   sha1 'f1319de27324d85898a9df0a293a438bbaaa12b5'
 
-  depends_on 'gtk+' unless ARGV.include? "--no-gtk"
-
-  def options
-    [['--no-gtk', "Don't build with Gtk+ support"]]
-  end
+  depends_on 'pkg-config' => :build
+  depends_on 'gtk+' => :optional
 
   def install
     # We need to add this because nameserver8_compat.h has been removed in Snow Leopard
     ENV['LIBS'] = "-lresolv"
-    args = %W[--prefix=#{prefix} --disable-dependency-tracking]
-    args << "--without-gtk" if ARGV.include? "--no-gtk"
+    args = %W[
+      --disable-dependency-tracking
+      --prefix=#{prefix}
+    ]
+    args << "--without-gtk" if build.without? 'gtk+'
     system "./configure", *args
     system "make install"
   end

@@ -2,8 +2,8 @@ require 'formula'
 
 class Hwloc < Formula
   homepage 'http://www.open-mpi.org/projects/hwloc/'
-  url 'http://www.open-mpi.org/software/hwloc/v1.4/downloads/hwloc-1.4.2.tar.gz'
-  sha1 'b33421432071d1de638b16e06ad7eb5b8922a32c'
+  url 'http://www.open-mpi.org/software/hwloc/v1.6/downloads/hwloc-1.6.tar.gz'
+  sha1 'cdf855648c02b24ed3f70df6423470830a4cf911'
 
   depends_on 'pkg-config' => :build
   # Uses Cairo, tested against Snow Leopard version

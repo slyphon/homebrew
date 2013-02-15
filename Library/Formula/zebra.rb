@@ -1,9 +1,9 @@
 require 'formula'
 
 class Zebra < Formula
-  url 'http://ftp.indexdata.dk/pub/zebra/idzebra-2.0.50.tar.gz'
   homepage 'http://www.indexdata.com/zebra'
-  md5 '4393217c9973bf5959396ad4150ee24e'
+  url 'http://ftp.indexdata.dk/pub/zebra/idzebra-2.0.53.tar.gz'
+  sha1 'e8a819250adfd5c3af37d066ebffd5b82c6c55da'
 
   depends_on 'yaz'
 

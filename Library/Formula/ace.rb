@@ -2,8 +2,8 @@ require 'formula'
 
 class Ace < Formula
   homepage 'http://www.cse.wustl.edu/~schmidt/ACE.html'
-  url 'http://download.dre.vanderbilt.edu/previous_versions/ACE-6.1.2.tar.bz2'
-  sha1 'd2f22607cbb1246abd2f4b77647f37442d117a7e'
+  url 'http://download.dre.vanderbilt.edu/previous_versions/ACE-6.1.7.tar.bz2'
+  sha1 '9336ada48e102062c15273c3945bd0e9b1a588fe'
 
   def install
     # ACE has two methods of compilation, "traditional" and ./configure.
@@ -21,7 +21,10 @@ class Ace < Formula
              1005 => 'macosx_leopard',
              1006 => 'macosx_snowleopard',
              1007 => 'macosx_lion',
-             1008 => 'macosx_mountainlion' }[ver]
+             # TODO: Fix for 6.1.4.
+             # There's no Mountain Lion file yet.
+             # Reported to d.schmidt@vanderbilt.edu
+             1008 => 'macosx_lion' }[ver]
     makefile = "platform_#{name}.GNU"
     header = "config-" + name.sub('_','-') + ".h"
 

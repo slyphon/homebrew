@@ -1,22 +1,55 @@
+require 'ostruct'
+
 module Homebrew extend self
 
   def link
     raise KegUnspecifiedError if ARGV.named.empty?
 
     if Process.uid.zero? and not File.stat(HOMEBREW_BREW_FILE).uid.zero?
-      # note we only abort if Homebrew is *not* installed as sudo and the user
-      # calls brew as root. The fix is to chown brew to root.
-      abort "Cowardly refusing to `sudo brew link'"
+      raise "Cowardly refusing to `sudo brew link'\n#{SUDO_BAD_ERRMSG}"
     end
 
+    mode = OpenStruct.new
+
+    mode.overwrite = true if ARGV.include? '--overwrite'
+    mode.dry_run = true if ARGV.dry_run?
+
     ARGV.kegs.each do |keg|
-      if keg.linked_keg_record.directory? and keg.linked_keg_record.realpath == keg
+      if keg.linked?
         opoo "Already linked: #{keg}"
+        puts "To relink: brew unlink #{keg.fname} && brew link #{keg.fname}"
         next
       end
 
-      print "Linking #{keg}... " do
-        puts "#{keg.link} symlinks created"
+      if mode.dry_run and mode.overwrite
+        print "Would remove:\n" do
+          keg.link(mode)
+        end
+
+        next
+      elsif mode.dry_run
+        print "Would link:\n" do
+          keg.link(mode)
+        end
+
+        next
+      end
+
+      begin
+        f = Formula.factory(keg.fname)
+        if f.keg_only? and not ARGV.force?
+          opoo "#{keg.fname} is keg-only and must be linked with --force"
+          puts "Note that doing so can interfere with building software."
+          next
+        end
+      rescue
+        # Nothing to see here
+      end
+
+      keg.lock do
+        print "Linking #{keg}... " do
+          puts "#{keg.link(mode)} symlinks created"
+        end
       end
     end
   end

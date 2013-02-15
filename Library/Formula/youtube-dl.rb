@@ -1,8 +1,18 @@
 require 'formula'
 
-class YoutubeDl < ScriptFileFormula
-  url 'https://github.com/rg3/youtube-dl/raw/2012.02.27/youtube-dl'
+class YoutubeDl < Formula
   homepage 'http://rg3.github.com/youtube-dl/'
-  sha256 '98146a510fed3d39a34a686e1100d6df4efa2b9b9e194649e615afc1ff646834'
-  version '2012.02.27'
+  url 'http://youtube-dl.org/downloads/2013.02.01/youtube-dl-2013.02.01.tar.gz'
+  sha1 '0508c846868d885b408c4cd2dbd8b29ab1211617'
+
+  def install
+    system "make", "youtube-dl", "PREFIX=#{prefix}"
+    bin.install 'youtube-dl'
+    man1.install 'youtube-dl.1'
+    (prefix+'etc/bash_completion.d').install 'youtube-dl.bash-completion'
+  end
+
+  def caveats
+    "To use post-processing options, `brew install ffmpeg`."
+  end
 end

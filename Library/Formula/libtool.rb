@@ -1,7 +1,7 @@
 require 'formula'
 
-# Xcode 4.3 provides the Apple libtool
-# This is not the same, but as a result we must install these as glibtool etc.
+# Xcode 4.3 provides the Apple libtool.
+# This is not the same so as a result we must install this as glibtool.
 
 class Libtool < Formula
   homepage 'http://www.gnu.org/software/libtool/'
@@ -9,16 +9,14 @@ class Libtool < Formula
   mirror 'http://ftp.gnu.org/gnu/libtool/libtool-2.4.2.tar.gz'
   sha1 '22b71a8b5ce3ad86e1094e7285981cae10e6ff88'
 
-  if MacOS.xcode_version.to_f < 4.3 or File.file? "/usr/bin/glibtoolize"
-    keg_only "Xcode (up to and including 4.2) provides (a rather old) Libtool."
+  if MacOS::Xcode.provides_autotools? or File.file? "/usr/bin/glibtoolize"
+    keg_only "Xcode 4.2 and below provide glibtool."
   end
 
-  def options
-    [["--universal", "Builds a universal binary"]]
-  end
+  option :universal
 
   def install
-    ENV.universal_binary if ARGV.build_universal?
+    ENV.universal_binary if build.universal?
     system "./configure", "--disable-dependency-tracking",
                           "--prefix=#{prefix}",
                           "--program-prefix=g",
@@ -32,7 +30,7 @@ class Libtool < Formula
     EOS
   end
 
-  def test
-    system "#{bin}/glibtoolize", "--version"
+  test do
+    system "#{bin}/glibtool", 'execute', '/usr/bin/true'
   end
 end

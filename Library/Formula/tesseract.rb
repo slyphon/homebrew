@@ -2,26 +2,21 @@ require 'formula'
 
 def install_language_data
   langs = {
-    'eng'     => 'f2d57eea524ead247612bd027375037c21e22463',
-    'heb'     => '648d9ea2bbf42f0410700a2afd02aaea64f89f28',
-    'hin'     => 'ad3137d84b917a4d5bd576bfd2c540d5c6645ae1',
-    'ara'     => '862b8dbfe655d31201229571b46512f18892760f',
-    'tha'     => 'fa1621c7d0dc871d140fdbd4eb326a09e37272d3',
-    'slk-frak' => '9420b153514fd0b3f8d77240ca1523b5c6d672d0'
+    'eng'     => '989ed4c3a5b246d7353893e466c353099d8b73a1',
+    'heb'     => '67e10e616caf62545eacd436e85f89436687e22b',
+    'hin'     => '4ceef97ffb8b4ab5ac79ee4bad5b5be0885f228f',
+    'ara'     => 'e15cf6b7a027454db56ecedab0038c7739ab29cc',
+    'tha'     => '04a35c04585a887662dc668e54f5368dabf31f50'
   }
 
-  langs.each do |lang, sha1|
-    language_klass = <<-EOS
-    class #{lang.delete('-').capitalize} < Formula
-      url 'http://tesseract-ocr.googlecode.com/files/tesseract-ocr-3.01.#{lang}.tar.gz'
-      version '3.01'
-      sha1 '#{sha1}'
+  langs.each do |lang, sha|
+    klass = Class.new(Formula) do
+      url "http://tesseract-ocr.googlecode.com/files/tesseract-ocr-3.02.#{lang}.tar.gz"
+      version '3.02'
+      sha1 sha
     end
 
-    #{lang.delete('-').capitalize}.new
-    EOS
-
-    eval(language_klass).brew { mv Dir['tessdata/*'], "#{share}/tessdata/" }
+    klass.new.brew { mv Dir['tessdata/*'], "#{share}/tessdata/" }
   end
 
   # pre-3.01 language data uses a different URL format and installs differently
@@ -64,66 +59,49 @@ def install_language_data
     'cat'       => '0301a9c81c1d646bd1b135ca89476fb63bd634f8'
   }
 
-  langs_old.each do |lang, sha1|
-    language_klass = <<-EOS
-    class #{lang.delete('-').capitalize} < Formula
-      url 'http://tesseract-ocr.googlecode.com/files/#{lang}.traineddata.gz',
+  langs_old.each do |lang, sha|
+    klass = Class.new(Formula) do
+      url "http://tesseract-ocr.googlecode.com/files/#{lang}.traineddata.gz",
         :using => GzipOnlyDownloadStrategy
       version '3.00'
-      sha1 '#{sha1}'
+      sha1 sha
     end
 
-    #{lang.delete('-').capitalize}.new
-    EOS
-
-    eval(language_klass).brew { mv Dir['*'], "#{share}/tessdata/" }
+    klass.new.brew { mv Dir['*'], "#{share}/tessdata/" }
   end
 
 end
 
 # This stays around for the English-only build option
 class TesseractEnglishData < Formula
-  url 'http://tesseract-ocr.googlecode.com/files/tesseract-ocr-3.01.eng.tar.gz'
-  version '3.01'
-  md5 '89c139a73e0e7b1225809fc7b226b6c9'
+  url 'http://tesseract-ocr.googlecode.com/files/tesseract-ocr-3.02.eng.tar.gz'
+  version '3.02'
+  sha1 '989ed4c3a5b246d7353893e466c353099d8b73a1'
 end
 
 class Tesseract < Formula
   homepage 'http://code.google.com/p/tesseract-ocr/'
-  url 'http://tesseract-ocr.googlecode.com/files/tesseract-3.01.tar.gz'
-  md5 '1ba496e51a42358fb9d3ffe781b2d20a'
+  url 'http://tesseract-ocr.googlecode.com/files/tesseract-ocr-3.02.02.tar.gz'
+  sha1 'a950acf7b75cf851de2de787e9abb62c58ca1827'
+
+  option "all-languages", "Install recognition data for all languages"
 
   depends_on 'libtiff'
   depends_on 'leptonica'
-
-  if MacOS.xcode_version >= "4.3"
-    # when and if the tarball provides configure, remove autogen.sh and these deps
-    depends_on "automake" => :build
-    depends_on "libtool" => :build
-  end
 
   fails_with :llvm do
     build 2206
     cause "Executable 'tesseract' segfaults on 10.6 when compiled with llvm-gcc"
   end
 
-  # mftraining has a missing symbols error when cleaned
-  skip_clean 'bin'
-
-  def options
-    [["--all-languages", "Install recognition data for all languages"]]
-  end
-
   def install
-    system "/bin/sh autogen.sh"
-
     # explicitly state leptonica header location, as the makefile defaults to /usr/local/include,
     # which doesn't work for non-default homebrew location
     ENV['LIBLEPT_HEADERSDIR'] = HOMEBREW_PREFIX/"include"
 
     system "./configure", "--disable-dependency-tracking", "--prefix=#{prefix}"
     system "make install"
-    if ARGV.include? "--all-languages"
+    if build.include? "all-languages"
       install_language_data
     else
       TesseractEnglishData.new.brew { mv Dir['tessdata/*'], "#{share}/tessdata/" }

@@ -1,17 +1,28 @@
 require 'formula'
 
 class Rust < Formula
-  url 'http://dl.rust-lang.org/dist/rust-0.2.tar.gz'
   homepage 'http://www.rust-lang.org/'
-  md5 '47be90f952ec01c3088af58be78fd618'
+  url 'http://dl.rust-lang.org/dist/rust-0.5.tar.gz'
+  sha256 'd326d22707f0562d669c11efbc33ae812ddbf76ab78f07087fc5beb095a8928a'
 
   fails_with :clang do
     build 318
     cause "cannot initialize a parameter of type 'volatile long long *' with an rvalue of type 'int *'"
   end
 
+  # Fix repl showstopper bug; can be removed for 0.6.
+  # and add clang 4.2 support for new XCode
+  def patches
+    [ "https://github.com/mozilla/rust/commit/9bf87bbf66227c132283ae59720f919601de9a56.patch",
+    "https://github.com/mozilla/rust/commit/37f97ff5041839aa42892115de954489f9eab5bc.patch",
+    "https://github.com/labria/rust/commit/b4133cc1236197d0a3ce6f8664827f89277315fe.patch",
+    "https://github.com/mozilla/rust/commit/3ee1d3ebb81de199fc630a86933ac18c0a869482.patch" ]
+  end
+
   def install
-    system "./configure", "--prefix=#{prefix}"
+    args = ["--prefix=#{prefix}"]
+    args << "--enable-clang" if ENV.compiler == :clang
+    system "./configure", *args
     system "make"
     system "make install"
   end

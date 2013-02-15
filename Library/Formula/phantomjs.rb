@@ -1,9 +1,7 @@
 require 'formula'
 
 class SnowLeopardOrNewer < Requirement
-  def satisfied?
-    MacOS.snow_leopard?
-  end
+  satisfy MacOS.version >= :snow_leopard
 
   def message
     "PhantomJS requires Mac OS X 10.6 (Snow Leopard) or newer."
@@ -12,10 +10,10 @@ end
 
 class Phantomjs < Formula
   homepage 'http://www.phantomjs.org/'
-  url "http://phantomjs.googlecode.com/files/phantomjs-1.6.0-macosx-static.zip"
-  sha1 '7e4a4f069ffb32ab693d3234a9d67096a7ad23a3'
+  url 'http://phantomjs.googlecode.com/files/phantomjs-1.8.1-macosx.zip'
+  sha1 '69206ce980703e54160628614a6917d8ec19c281'
 
-  depends_on SnowLeopardOrNewer.new
+  depends_on SnowLeopardOrNewer
 
   def install
     bin.install 'bin/phantomjs'

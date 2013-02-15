@@ -6,11 +6,7 @@ class Freetds < Formula
   sha1 '3ab06c8e208e82197dc25d09ae353d9f3be7db52'
 
   depends_on "pkg-config" => :build
-  depends_on "unixodbc" if ARGV.include? "--with-unixodbc"
-
-  def options
-    [['--with-unixodbc', "Compile against unixODBC."]]
-  end
+  depends_on "unixodbc" => :optional
 
   def install
     args = %W[--prefix=#{prefix}
@@ -19,7 +15,7 @@ class Freetds < Formula
               --mandir=#{man}
             ]
 
-    if ARGV.include? "--with-unixodbc"
+    if build.include? "with-unixodbc"
       args << "--with-unixodbc=#{Formula.factory('unixodbc').prefix}"
     end
 

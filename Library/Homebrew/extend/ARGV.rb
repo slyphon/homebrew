@@ -1,5 +1,3 @@
-require 'bottles'
-
 module HomebrewArgvExtension
   def named
     @named ||= reject{|arg| arg[0..0] == '-'}
@@ -73,7 +71,7 @@ module HomebrewArgvExtension
     flag? '--force'
   end
   def verbose?
-    flag? '--verbose' or ENV['HOMEBREW_VERBOSE']
+    flag? '--verbose' or ENV['VERBOSE'] or ENV['HOMEBREW_VERBOSE']
   end
   def debug?
     flag? '--debug' or ENV['HOMEBREW_DEBUG']
@@ -86,6 +84,22 @@ module HomebrewArgvExtension
   end
   def one?
     flag? '--1'
+  end
+  def dry_run?
+    include?('--dry-run') || switch?('n')
+  end
+
+  def homebrew_developer?
+    include? '--homebrew-developer' or ENV['HOMEBREW_DEVELOPER']
+  end
+
+  def ignore_deps?
+    include? '--ignore-dependencies'
+  end
+
+  def json
+    json_rev = find {|o| o =~ /--json=.+/}
+    json_rev.split("=").last if json_rev
   end
 
   def build_head?
@@ -112,12 +126,12 @@ module HomebrewArgvExtension
   end
 
   def build_bottle?
-    bottles_supported? and include? '--build-bottle'
+    include? '--build-bottle' and MacOS.bottles_supported?(true)
   end
 
   def build_from_source?
-    flag? '--build-from-source' or ENV['HOMEBREW_BUILD_FROM_SOURCE'] \
-      or not bottles_supported? or not options_only.empty?
+    include? '--build-from-source' or ENV['HOMEBREW_BUILD_FROM_SOURCE'] \
+      or build_head? or build_devel? or build_universal? or build_bottle?
   end
 
   def flag? flag
@@ -160,8 +174,8 @@ module HomebrewArgvExtension
     flags_to_clear.each {|flag| delete flag}
 
     yield
-
-    replace old_args
+  ensure
+    replace(old_args)
   end
 
   private

@@ -3,7 +3,10 @@ require 'cmd/untap'
 
 module Homebrew extend self
 
+  DEPRECATED_TAPS = ['adamv-alt']
+
   def update
+    abort "This command updates brew itself, and does not take formula names." unless ARGV.named.empty?
     abort "Please `brew install git' first." unless which "git"
 
     # ensure GIT_CONFIG is unset as we need to operate on .git/config
@@ -19,11 +22,24 @@ module Homebrew extend self
 
     new_files = []
     Dir["Library/Taps/*"].each do |tapd|
+      next unless File.directory?(tapd)
+
+      basename = Pathname.new(tapd).basename.to_s
+      if DEPRECATED_TAPS.include?(basename)
+        opoo "#{basename} is deprecated; please untap it"
+        next
+      end
+
       cd tapd do
-        updater = Updater.new
-        updater.pull!
-        report.merge!(updater.report) do |key, oldval, newval|
-          oldval.concat(newval)
+        begin
+          updater = Updater.new
+          updater.pull!
+          report.merge!(updater.report) do |key, oldval, newval|
+            oldval.concat(newval)
+          end
+        rescue
+          tapd =~ %r{^Library/Taps/(\w+)-(\w+)}
+          onoe "Failed to update tap: #$1/#$2"
         end
       end
     end
@@ -124,10 +140,10 @@ class Report < Hash
   def dump
     # Key Legend: Added (A), Copied (C), Deleted (D), Modified (M), Renamed (R)
 
-    dump_formula_report :A, "New Formula"
-    dump_formula_report :M, "Updated Formula"
-    dump_formula_report :D, "Deleted Formula"
-    dump_formula_report :R, "Renamed Formula"
+    dump_formula_report :A, "New Formulae"
+    dump_formula_report :M, "Updated Formulae"
+    dump_formula_report :D, "Deleted Formulae"
+    dump_formula_report :R, "Renamed Formulae"
 #    dump_new_commands
 #    dump_deleted_commands
   end

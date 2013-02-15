@@ -1,9 +1,5 @@
 require 'testing_env'
 
-require 'extend/ARGV' # needs to be after test/unit to avoid conflict with OptionsParser
-ARGV.extend(HomebrewArgvExtension)
-
-
 module ExtendArgvPlusYeast
   def reset
     @named = nil
@@ -24,9 +20,9 @@ class ARGVTests < Test::Unit::TestCase
 
   def test_ARGV
     assert ARGV.named.empty?
-    
+
     (HOMEBREW_CELLAR+'mxcl/10.0').mkpath
-    
+
     ARGV.reset
     ARGV.unshift 'mxcl'
     assert_equal 1, ARGV.named.length
@@ -48,4 +44,22 @@ class ARGVTests < Test::Unit::TestCase
     assert !ARGV.switch?('-n')
   end
 
+  def test_filter_for_dependencies_clears_flags
+    ARGV.unshift("--debug")
+    ARGV.filter_for_dependencies do
+      assert ARGV.empty?
+    end
+  end
+
+  def test_filter_for_dependencies_ensures_argv_restored
+    ARGV.expects(:replace).with(ARGV.clone)
+    begin
+      ARGV.filter_for_dependencies { raise Exception }
+    rescue Exception
+    end
+  end
+
+  def test_filter_for_dependencies_returns_block_value
+    assert_equal 1, ARGV.filter_for_dependencies { 1 }
+  end
 end

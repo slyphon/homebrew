@@ -118,7 +118,7 @@ _brew_create ()
     local cur="${COMP_WORDS[COMP_CWORD]}"
     case "$cur" in
     --*)
-        __brewcomp "--autotools --cmake --no-fetch"
+        __brewcomp "--autotools --cmake --no-fetch --set-name --set-version"
         return
         ;;
     esac
@@ -134,6 +134,11 @@ _brew_deps ()
         ;;
     esac
     __brew_complete_formulae
+}
+
+_brew_doctor () {
+    local cur="${COMP_WORDS[COMP_CWORD]}"
+    __brewcomp "$(brew doctor --list-checks)"
 }
 
 _brew_diy ()
@@ -209,6 +214,18 @@ _brew_install ()
         ;;
     esac
     __brew_complete_formulae
+}
+
+_brew_link ()
+{
+    local cur="${COMP_WORDS[COMP_CWORD]}"
+    case "$cur" in
+    --*)
+        __brewcomp "--dry-run --overwrite"
+        return
+        ;;
+    esac
+    __brew_complete_installed
 }
 
 _brew_list ()
@@ -315,7 +332,7 @@ _brew_uses ()
     local cur="${COMP_WORDS[COMP_CWORD]}"
     case "$cur" in
     --*)
-        __brewcomp "--installed"
+        __brewcomp "--installed --recursive"
         return
         ;;
     esac
@@ -357,8 +374,9 @@ _brew ()
     done
 
     if [[ $i -eq $COMP_CWORD ]]; then
-        local ext=$(\ls $(brew --repository)/Library/Contributions/cmds \
-                2>/dev/null | sed -e "s/\.rb//g" -e "s/brew-//g")
+        local ext=$(\ls -p $(brew --repository)/Library/Contributions/cmds \
+                2>/dev/null | sed -e "s/\.rb//g" -e "s/brew-//g" \
+                -e "s/.*\///g")
         __brewcomp "
             --cache --cellar --config
             --env --prefix --repository
@@ -401,15 +419,17 @@ _brew ()
     case "$cmd" in
     --cache|--cellar|--prefix)  __brew_complete_formulae ;;
     audit|cat|edit|home)        __brew_complete_formulae ;;
-    link|ln|test|unlink)        __brew_complete_installed ;;
+    test|unlink)                __brew_complete_installed ;;
     upgrade)                    __brew_complete_outdated ;;
     cleanup)                    _brew_cleanup ;;
     create)                     _brew_create ;;
     deps)                       _brew_deps ;;
+    doctor|dr)                  _brew_doctor ;;
     diy|configure)              _brew_diy ;;
     fetch)                      _brew_fetch ;;
     info|abv)                   _brew_info ;;
-    install)                    _brew_install ;;
+    install|instal)             _brew_install ;;
+    link|ln)                    _brew_link ;;
     list|ls)                    _brew_list ;;
     log)                        _brew_log ;;
     missing)                    __brew_complete_formulae ;;
