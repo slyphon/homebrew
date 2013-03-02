@@ -39,7 +39,7 @@ class Formula
     # Ensure the bottle URL is set. If it does not have a checksum,
     # then a bottle is not available for the current platform.
     if @bottle and not (@bottle.checksum.nil? or @bottle.checksum.empty?)
-      @bottle.url ||= bottle_base_url + bottle_filename(self)
+      @bottle.url ||= bottle_url(self)
       if @bottle.cat_without_underscores
         @bottle.url.gsub!(MacOS.cat.to_s, MacOS.cat_without_underscores.to_s)
       end
@@ -202,7 +202,8 @@ class Formula
     cc = Compiler.new(cc) unless cc.is_a? Compiler
     return self.class.cc_failures.find do |failure|
       next unless failure.compiler == cc.name
-      failure.build.zero? or failure.build >= cc.build
+      failure.build.zero? or \
+        (failure.build >= cc.build or not ARGV.homebrew_developer?)
     end
   end
 
@@ -228,7 +229,7 @@ class Formula
         # we allow formulae to do anything they want to the Ruby process
         # so load any deps before this point! And exit asap afterwards
         yield self
-      rescue RuntimeError, SystemCallError => e
+      rescue RuntimeError, SystemCallError
         %w(config.log CMakeCache.txt).each do |fn|
           (HOMEBREW_LOGS/name).install(fn) if File.file?(fn)
         end
@@ -294,7 +295,7 @@ class Formula
     names.each do |name|
       yield begin
         Formula.factory(name)
-      rescue => e
+      rescue
         # Don't let one broken formula break commands. But do complain.
         onoe "Failed to import: #{name}"
         next
@@ -477,7 +478,7 @@ class Formula
       "homepage" => homepage,
       "versions" => {
         "stable" => (stable.version.to_s if stable),
-        "bottle" => bottle && MacOS.bottles_supported? || false,
+        "bottle" => bottle || false,
         "devel" => (devel.version.to_s if devel),
         "head" => (head.version.to_s if head)
       },
@@ -504,7 +505,7 @@ class Formula
 
         hsh["installed"] << {
           "version" => keg.basename.to_s,
-          "used_options" => tab.used_options,
+          "used_options" => tab.used_options.map(&:flag),
           "built_as_bottle" => tab.built_bottle
         }
       end
@@ -543,7 +544,7 @@ protected
       mkdir_p(logd)
 
       rd, wr = IO.pipe
-      pid = fork do
+      fork do
         rd.close
         $stdout.reopen wr
         $stderr.reopen wr
@@ -570,7 +571,7 @@ protected
         raise ErrorDuringExecution
       end
     end
-  rescue ErrorDuringExecution => e
+  rescue ErrorDuringExecution
     raise BuildError.new(self, cmd, args, $?)
   ensure
     f.close if f and not f.closed?
@@ -722,7 +723,6 @@ private
     end
 
     def version val=nil
-      return @version if val.nil?
       @stable ||= SoftwareSpec.new
       @stable.version(val)
     end
@@ -806,10 +806,11 @@ private
     def post_depends_on(dep)
       # Generate with- or without- options for optional and recommended
       # dependencies and requirements
-      if dep.optional? && !build.has_option?("with-#{dep.name}")
-        build.add("with-#{dep.name}", "Build with #{dep.name} support")
-      elsif dep.recommended? && !build.has_option?("without-#{dep.name}")
-        build.add("without-#{dep.name}", "Build without #{dep.name} support")
+      name = dep.name.split("/").last # strip any tap prefix
+      if dep.optional? && !build.has_option?("with-#{name}")
+        build.add("with-#{name}", "Build with #{name} support")
+      elsif dep.recommended? && !build.has_option?("without-#{name}")
+        build.add("without-#{name}", "Build without #{name} support")
       end
     end
   end
