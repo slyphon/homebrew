@@ -29,19 +29,21 @@ class AbstractDownloadStrategy
 end
 
 class CurlDownloadStrategy < AbstractDownloadStrategy
-  attr_reader :tarball_path, :local_bottle_path
-  attr_writer :local_bottle_path
+  attr_reader :tarball_path
+  attr_accessor :local_bottle_path
 
   def initialize name, package
     super
-    @mirrors = package.mirrors
-    @unique_token = "#{name}-#{package.version}" unless name.to_s.empty? or name == '__UNKNOWN__'
-    if @unique_token
-      @tarball_path=HOMEBREW_CACHE+(@unique_token+ext)
+
+    if name.to_s.empty? || name == '__UNKNOWN__'
+      @tarball_path = HOMEBREW_CACHE + File.basename(@url)
     else
-      @tarball_path=HOMEBREW_CACHE+File.basename(@url)
+      @tarball_path = HOMEBREW_CACHE + "#{name}-#{package.version}#{ext}"
     end
-    @temporary_path=Pathname.new(@tarball_path.to_s + ".incomplete")
+
+    @mirrors = package.mirrors
+    @temporary_path = Pathname("#@tarball_path.incomplete")
+    @local_bottle_path = nil
   end
 
   def cached_location
@@ -88,12 +90,12 @@ class CurlDownloadStrategy < AbstractDownloadStrategy
 
     case @tarball_path.compression_type
     when :zip
-      quiet_safe_system '/usr/bin/unzip', {:quiet_flag => '-qq'}, @tarball_path
+      with_system_path { quiet_safe_system 'unzip', {:quiet_flag => '-qq'}, @tarball_path }
       chdir
     when :gzip, :bzip2, :compress, :tar
       # Assume these are also tarred
       # TODO check if it's really a tar archive
-      safe_system '/usr/bin/tar', 'xf', @tarball_path
+      with_system_path { safe_system 'tar', 'xf', @tarball_path }
       chdir
     when :xz
       raise "You must install XZutils: brew install xz" unless which "xz"
@@ -178,7 +180,7 @@ end
 class GzipOnlyDownloadStrategy < CurlDownloadStrategy
   def stage
     FileUtils.mv @tarball_path, File.basename(@url)
-    safe_system '/usr/bin/gunzip', '-f', File.basename(@url)
+    with_system_path { safe_system 'gunzip', '-f', File.basename(@url) }
   end
 end
 

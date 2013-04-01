@@ -2,6 +2,7 @@ require 'download_strategy'
 require 'dependency_collector'
 require 'formula_support'
 require 'formula_lock'
+require 'formula_pin'
 require 'hardware'
 require 'bottles'
 require 'patches'
@@ -68,6 +69,8 @@ class Formula
       # make sure to strip "--" from the start of options
       self.class.build.add opt[/--(.+)$/, 1], desc
     end
+
+    @pin = FormulaPin.new(self)
   end
 
   def url;      @active_spec.url;     end
@@ -78,6 +81,22 @@ class Formula
   # if the dir is there, but it's empty we consider it not installed
   def installed?
     installed_prefix.children.length > 0 rescue false
+  end
+
+  def pinable?
+    @pin.pinable?
+  end
+
+  def pinned?
+    @pin.pinned?
+  end
+
+  def pin
+    @pin.pin
+  end
+
+  def unpin
+    @pin.unpin
   end
 
   def linked_keg
@@ -169,6 +188,9 @@ class Formula
   # are supported.
   def pour_bottle?; true end
 
+  # Can be overridden to run commands on both source and bottle installation.
+  def post_install; end
+
   # tell the user about any caveats regarding this package, return a string
   def caveats; nil end
 
@@ -198,12 +220,9 @@ class Formula
   end
 
   def fails_with? cc
-    return false if self.class.cc_failures.nil?
     cc = Compiler.new(cc) unless cc.is_a? Compiler
-    return self.class.cc_failures.find do |failure|
-      next unless failure.compiler == cc.name
-      failure.build.zero? or \
-        (failure.build >= cc.build or not ARGV.homebrew_developer?)
+    (self.class.cc_failures || []).any? do |failure|
+      failure.compiler == cc.name && failure.build >= cc.build
     end
   end
 
@@ -262,6 +281,9 @@ class Formula
   def to_s
     name
   end
+  def inspect
+    name
+  end
 
   # Standard parameters for CMake builds.
   # Using Build Type "None" tells cmake to use our CFLAGS,etc. settings.
@@ -305,17 +327,9 @@ class Formula
   class << self
     include Enumerable
   end
-  def self.all
-    opoo "Formula.all is deprecated, simply use Formula.map"
-    map
-  end
 
   def self.installed
     HOMEBREW_CELLAR.children.map{ |rack| factory(rack.basename) rescue nil }.compact
-  end
-
-  def inspect
-    name
   end
 
   def self.aliases
@@ -506,7 +520,8 @@ class Formula
         hsh["installed"] << {
           "version" => keg.basename.to_s,
           "used_options" => tab.used_options.map(&:flag),
-          "built_as_bottle" => tab.built_bottle
+          "built_as_bottle" => tab.built_bottle,
+          "poured_from_bottle" => tab.poured_from_bottle
         }
       end
     end
@@ -667,11 +682,11 @@ private
 
     def self.attr_rw(*attrs)
       attrs.each do |attr|
-        class_eval %Q{
+        class_eval <<-EOS, __FILE__, __LINE__ + 1
           def #{attr}(val=nil)
             val.nil? ? @#{attr} : @#{attr} = val
           end
-        }
+        EOS
       end
     end
 
@@ -679,15 +694,12 @@ private
     attr_rw :plist_startup, :plist_manual
 
     Checksum::TYPES.each do |cksum|
-      class_eval %Q{
-        def #{cksum}(val=nil)
-          unless val.nil?
-            @stable ||= SoftwareSpec.new
-            @stable.#{cksum}(val)
-          end
-          return @stable ? @stable.#{cksum} : @#{cksum}
+      class_eval <<-EOS, __FILE__, __LINE__ + 1
+        def #{cksum}(val)
+          @stable ||= SoftwareSpec.new
+          @stable.#{cksum}(val)
         end
-      }
+      EOS
     end
 
     def build
@@ -704,7 +716,7 @@ private
       instance_eval(&block)
     end
 
-    def bottle url=nil, &block
+    def bottle *, &block
       return @bottle unless block_given?
       @bottle ||= Bottle.new
       @bottle.instance_eval(&block)
@@ -787,12 +799,8 @@ private
     end
 
     def fails_with compiler, &block
-      @cc_failures ||= CompilerFailures.new
-      @cc_failures << if block_given?
-        CompilerFailure.new(compiler, &block)
-      else
-        CompilerFailure.new(compiler)
-      end
+      @cc_failures ||= Set.new
+      @cc_failures << CompilerFailure.new(compiler, &block)
     end
 
     def test &block
