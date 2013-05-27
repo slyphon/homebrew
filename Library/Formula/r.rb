@@ -9,8 +9,8 @@ end
 
 class R < Formula
   homepage 'http://www.r-project.org'
-  url 'http://cran.r-project.org/src/base/R-2/R-2.15.3.tar.gz'
-  sha1 'a05b68f31b00d8038d9f0a8562cfc0c8e32d9621'
+  url 'http://cran.r-project.org/src/base/R-3/R-3.0.1.tar.gz'
+  sha1 '5cc65476837926fdf04105954ea94efa53ac85ce'
 
   head 'https://svn.r-project.org/R/trunk'
 
@@ -55,9 +55,7 @@ class R < Formula
     ln_s prefix+"R.framework/Resources/man1/R.1", man1
     ln_s prefix+"R.framework/Resources/man1/Rscript.1", man1
 
-    bash_dir = prefix + 'etc/bash_completion.d'
-    bash_dir.mkpath
-    RBashCompletion.new.brew { bash_dir.install 'R' }
+    RBashCompletion.new.brew { bash_completion.install 'R' }
 
     prefix.install 'make-check.log' if build.include? 'test'
   end

@@ -12,6 +12,7 @@ require 'extend/pathname'
 require 'extend/string'
 require 'exceptions'
 require 'utils'
+require 'rbconfig'
 
 # Constants normally defined in global.rb
 HOMEBREW_PREFIX        = Pathname.new('/private/tmp/testbrew/prefix')
@@ -25,6 +26,9 @@ HOMEBREW_USER_AGENT    = 'Homebrew'
 HOMEBREW_WWW           = 'http://example.com'
 HOMEBREW_CURL_ARGS     = '-fsLA'
 HOMEBREW_VERSION       = '0.9-test'
+
+RUBY_BIN = Pathname.new("#{RbConfig::CONFIG['bindir']}")
+RUBY_PATH = RUBY_BIN + RbConfig::CONFIG['ruby_install_name'] + RbConfig::CONFIG['EXEEXT']
 
 MACOS = true
 MACOS_VERSION = ENV.fetch('MACOS_VERSION', 10.6)
@@ -63,10 +67,7 @@ def shutup
   end
 end
 
-unless ARGV.include? "--no-compat" or ENV['HOMEBREW_NO_COMPAT']
-  $:.unshift(File.expand_path("#{ABS__FILE__}/../../compat"))
-  require 'compatibility'
-end
+require 'compat' unless ARGV.include? "--no-compat" or ENV['HOMEBREW_NO_COMPAT']
 
 require 'test/unit' # must be after at_exit
 require 'extend/ARGV' # needs to be after test/unit to avoid conflict with OptionsParser
@@ -104,4 +105,10 @@ module Test::Unit::Assertions
     assert_respond_to(obj, :empty?, msg)
     assert(obj.empty?, msg)
   end if RUBY_VERSION.to_f <= 1.8
+end
+
+class Test::Unit::TestCase
+  def formula(*args, &block)
+    @_f = Class.new(Formula, &block).new(*args)
+  end
 end

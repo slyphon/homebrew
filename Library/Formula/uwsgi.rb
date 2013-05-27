@@ -2,8 +2,8 @@ require 'formula'
 
 class Uwsgi < Formula
   homepage 'http://projects.unbit.it/uwsgi/'
-  url 'http://projects.unbit.it/downloads/uwsgi-1.9.4.tar.gz'
-  sha1 'c3d67c6dba32830810506a4552ee4814d0a73a42'
+  url 'http://projects.unbit.it/downloads/uwsgi-1.9.8.tar.gz'
+  sha1 '41f6b838228d980a60d99c412a5ad16b4ba9bfe4'
 
   depends_on 'pcre'
   depends_on 'libyaml'
