@@ -1,15 +1,5 @@
 require 'formula'
 
-class PythonVersion < Requirement
-  env :userpaths
-
-  satisfy { `python -c 'import sys;print(sys.version[:3])'`.strip.to_f >= 2.6 }
-
-  def message
-    "Node's build system, gyp, requires Python 2.6 or newer."
-  end
-end
-
 class NpmNotInstalled < Requirement
   fatal true
 
@@ -41,8 +31,8 @@ end
 
 class Node < Formula
   homepage 'http://nodejs.org/'
-  url 'http://nodejs.org/dist/v0.10.8/node-v0.10.8.tar.gz'
-  sha1 'd650a09ae868bb04f424e3560658c15b9a885b5b'
+  url 'http://nodejs.org/dist/v0.10.11/node-v0.10.11.tar.gz'
+  sha1 '4f646bb3418d1c177ce28cdbc61e71de35b38aea'
 
   devel do
     url 'http://nodejs.org/dist/v0.11.2/node-v0.11.2.tar.gz'
@@ -55,7 +45,7 @@ class Node < Formula
   option 'without-npm', 'npm will not be installed'
 
   depends_on NpmNotInstalled unless build.without? 'npm'
-  depends_on PythonVersion
+  depends_on PythonInstalled.new("2.6") => :build
 
   fails_with :llvm do
     build 2326

@@ -2,6 +2,7 @@ require 'dependency'
 require 'dependencies'
 require 'requirement'
 require 'requirements'
+require 'requirements/ld64_dependency'
 require 'set'
 
 ## A dependency is a formula that another formula needs to install.
@@ -17,7 +18,7 @@ require 'set'
 class DependencyCollector
   # Define the languages that we can handle as external dependencies.
   LANGUAGE_MODULES = Set[
-    :chicken, :jruby, :lua, :node, :ocaml, :perl, :python, :rbx, :ruby
+    :chicken, :jruby, :lua, :node, :ocaml, :perl, :python, :python2, :python3, :rbx, :ruby
   ].freeze
 
   attr_reader :deps, :requirements
@@ -92,6 +93,11 @@ class DependencyCollector
     when :clt        then CLTDependency.new(tags)
     when :arch       then ArchRequirement.new(tags)
     when :hg         then MercurialDependency.new(tags)
+    when :python     then PythonInstalled.new(tags)
+    when :python2    then PythonInstalled.new("2", tags)
+    when :python3    then PythonInstalled.new("3", tags)
+    # Tiger's ld is too old to properly link some software
+    when :ld64       then LD64Dependency.new if MacOS.version < :leopard
     else
       raise "Unsupported special dependency #{spec}"
     end
