@@ -3,7 +3,12 @@ require 'formula'
 class ErlangInstalled < Requirement
   fatal true
 
-  satisfy { which 'erl' }
+  satisfy {
+    which 'erl' and begin
+      `erl -noshell -eval 'io:fwrite("~s~n", [erlang:system_info(otp_release)]).' -s erlang halt | grep -q '^R1[6789]'`
+      $?.exitstatus == 0
+    end
+  }
 
   def message; <<-EOS.undent
     Erlang R16 is required to install.
@@ -21,8 +26,8 @@ end
 
 class Elixir < Formula
   homepage 'http://elixir-lang.org/'
-  url  'https://github.com/elixir-lang/elixir/archive/v0.9.2.tar.gz'
-  sha1 'a8362056bb85bca73b2b04595cf2a34f96601157'
+  url  'https://github.com/elixir-lang/elixir/archive/v0.10.0.tar.gz'
+  sha1 '185347cdebd5cbd95bd346c32ed9666bf722d05a'
 
   head 'https://github.com/elixir-lang/elixir.git'
 

@@ -65,7 +65,7 @@ class << ENV
 
     # Homebrew's apple-gcc42 will be outside the PATH in superenv,
     # so xcrun may not be able to find it
-    if ENV['HOMEBREW_CC'] == 'gcc-4.2' && !MacOS.locate('gcc-4.2')
+    if ENV['HOMEBREW_CC'] == 'gcc-4.2'
       apple_gcc42 = Formula.factory('apple-gcc42') rescue nil
       ENV.append('PATH', apple_gcc42.opt_prefix/'bin', ':') if apple_gcc42
     end
@@ -254,11 +254,11 @@ class << ENV
   alias_method :j1, :deparallelize
   def gcc
     ENV['CC'] = ENV['OBJC'] = ENV['HOMEBREW_CC'] = "gcc"
-    ENV['CXX'] = ENV['OBJCXX'] = "g++"
+    ENV['CXX'] = ENV['OBJCXX'] = "g++-4.2"
   end
   def llvm
     ENV['CC'] = ENV['OBJC'] = ENV['HOMEBREW_CC'] = "llvm-gcc"
-    ENV['CXX'] = ENV['OBJCXX'] = "g++"
+    ENV['CXX'] = ENV['OBJCXX'] = "llvm-g++-4.2"
   end
   def clang
     ENV['CC'] = ENV['OBJC'] = ENV['HOMEBREW_CC'] = "clang"
