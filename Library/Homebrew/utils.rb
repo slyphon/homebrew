@@ -166,8 +166,8 @@ def puts_columns items, star_items=[]
   end
 end
 
-def which cmd
-  dir = ENV['PATH'].split(':').find {|p| File.executable? File.join(p, cmd)}
+def which cmd, path=ENV['PATH']
+  dir = path.split(File::PATH_SEPARATOR).find {|p| File.executable? File.join(p, cmd)}
   Pathname.new(File.join(dir, cmd)) unless dir.nil?
 end
 
@@ -203,7 +203,7 @@ end
 # GZips the given paths, and returns the gzipped paths
 def gzip *paths
   paths.collect do |path|
-    system "/usr/bin/gzip", path
+    with_system_path { safe_system 'gzip', path }
     Pathname.new("#{path}.gz")
   end
 end
@@ -244,6 +244,8 @@ module GitHub extend self
   Error = Class.new(StandardError)
 
   def open url, headers={}, &block
+    require 'net/https' # for exception classes below
+
     default_headers = {'User-Agent' => HOMEBREW_USER_AGENT}
     default_headers['Authorization'] = "token #{HOMEBREW_GITHUB_API_TOKEN}" if HOMEBREW_GITHUB_API_TOKEN
     Kernel.open(url, default_headers.merge(headers), &block)

@@ -7,9 +7,10 @@ class Subversion < Formula
   sha1 '45d227511507c5ed99e07f9d42677362c18b364c'
 
   bottle do
-    sha1 '4b8920c129cfc8adbf491a69d836a5a8f7455409' => :mountain_lion
-    sha1 'ee99dbd0f7b7d4abfdfc5d7a82a008d720713e47' => :lion
-    sha1 '733d68a8bfd92a64270fb67f0bc4cc0974602bf0' => :snow_leopard
+    revision 1
+    sha1 '22b10c1758441a42b7c2273e8e25d4354db48574' => :mountain_lion
+    sha1 'ecbfbc25e93fc1b2a4411dd64522903f21861ace' => :lion
+    sha1 '03f81ee8f7fb8a518dfce74b32443ebbe6f812d8' => :snow_leopard
   end
 
   option :universal
@@ -30,17 +31,10 @@ class Subversion < Formula
   # If building bindings, allow non-system interpreters
   env :userpaths if build.include? 'perl' or build.include? 'ruby'
 
+  # One patch to prevent '-arch ppc' from being pulled in from Perl's $Config{ccflags},
+  # and another one to put the svn-tools directory into libexec instead of bin
   def patches
-    ps = []
-
-    # Patch to prevent '-arch ppc' from being pulled in from Perl's $Config{ccflags}
-    if build.include? 'perl'
-      ps << DATA
-    end
-
-    unless ps.empty?
-      { :p0 => ps }
-    end
+    { :p0 => DATA }
   end
 
   # When building Perl or Ruby bindings, need to use a compiler that
@@ -52,7 +46,7 @@ class Subversion < Formula
   end if build.include? 'perl' or build.include? 'ruby'
 
   def apr_bin
-    superbin or "/usr/bin"
+    Superenv.bin or "/usr/bin"
   end
 
   def install
@@ -120,14 +114,6 @@ class Subversion < Formula
 
     system "make tools"
     system "make install-tools"
-    %w[
-      svn-populate-node-origins-index
-      svn-rep-sharing-stats
-      svnauthz-validate
-      svnraisetreeconflict
-    ].each do |prog|
-      bin.install_symlink bin/"svn-tools"/prog
-    end
 
     python do
       system "make swig-py"
@@ -137,11 +123,11 @@ class Subversion < Formula
     if build.include? 'perl'
       # Remove hard-coded ppc target, add appropriate ones
       if build.universal?
-        arches = "-arch x86_64 -arch i386"
+        arches = Hardware::CPU.universal_archs.as_arch_flags
       elsif MacOS.version <= :leopard
-        arches = "-arch i386"
+        arches = "-arch #{Hardware::CPU.arch_32_bit}"
       else
-        arches = "-arch x86_64"
+        arches = "-arch #{Hardware::CPU.arch_64_bit}"
       end
 
       perl_core = Pathname.new(`perl -MConfig -e 'print $Config{archlib}'`)+'CORE'
@@ -170,7 +156,11 @@ class Subversion < Formula
   end
 
   def caveats
-    s = ""
+    s = <<-EOS.undent
+      svntools have been installed to:
+        #{opt_prefix}/libexec
+
+    EOS
 
     s += python.standard_caveats if python
 
@@ -223,3 +213,15 @@ __END__
      INC  => join(' ', $includes, $cppflags,
                   " -I$swig_srcdir/perl/libsvn_swig_perl",
                   " -I$svnlib_srcdir/include",
+
+--- Makefile.in~ 2013-07-25 16:55:27.000000000 +0200
++++ Makefile.in 2013-07-25 17:02:02.000000000 +0200
+@@ -85,7 +85,7 @@
+ swig_pydir_extra = @libdir@/svn-python/svn
+ swig_pldir = @libdir@/svn-perl
+ swig_rbdir = $(SWIG_RB_SITE_ARCH_DIR)/svn/ext
+-toolsdir = @bindir@/svn-tools
++toolsdir = @libexecdir@/svn-tools
+
+ javahl_javadir = @libdir@/svn-javahl
+ javahl_javahdir = @libdir@/svn-javahl/include
