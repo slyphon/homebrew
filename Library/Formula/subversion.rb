@@ -2,15 +2,15 @@ require 'formula'
 
 class Subversion < Formula
   homepage 'http://subversion.apache.org/'
-  url 'http://archive.apache.org/dist/subversion/subversion-1.8.0.tar.bz2'
-  # url 'http://www.apache.org/dyn/closer.cgi?path=subversion/subversion-1.8.0.tar.bz2'
-  sha1 '45d227511507c5ed99e07f9d42677362c18b364c'
+  url 'http://www.apache.org/dyn/closer.cgi?path=subversion/subversion-1.8.3.tar.bz2'
+  mirror 'http://archive.apache.org/dist/subversion/subversion-1.8.3.tar.bz2'
+  sha1 'e328e9f1c57f7c78bea4c3af869ec5d4503580cf'
 
   bottle do
     revision 1
-    sha1 '22b10c1758441a42b7c2273e8e25d4354db48574' => :mountain_lion
-    sha1 'ecbfbc25e93fc1b2a4411dd64522903f21861ace' => :lion
-    sha1 '03f81ee8f7fb8a518dfce74b32443ebbe6f812d8' => :snow_leopard
+    sha1 '1d7364a2238b5a1c8270c9c8b269730bf20098d1' => :mountain_lion
+    sha1 '52f271a16e789230b8938b4244f863c8c73c76fa' => :lion
+    sha1 '28eac8463678924c6c9d1bb87d74d835ace329d4' => :snow_leopard
   end
 
   option :universal
@@ -155,37 +155,41 @@ class Subversion < Formula
     end
   end
 
+  test do
+    system "#{bin}/svnadmin", 'create', 'test'
+    system "#{bin}/svnadmin", 'verify', 'test'
+  end
+
   def caveats
     s = <<-EOS.undent
       svntools have been installed to:
         #{opt_prefix}/libexec
-
     EOS
 
     s += python.standard_caveats if python
 
     if build.include? 'perl'
       s += <<-EOS.undent
+
         The perl bindings are located in various subdirectories of:
           #{prefix}/Library/Perl
-
       EOS
     end
 
     if build.include? 'ruby'
       s += <<-EOS.undent
+
         You may need to add the Ruby bindings to your RUBYLIB from:
           #{HOMEBREW_PREFIX}/lib/ruby
-
       EOS
     end
 
     if build.include? 'java'
       s += <<-EOS.undent
+
         You may need to link the Java bindings into the Java Extensions folder:
           sudo mkdir -p /Library/Java/Extensions
           sudo ln -s #{HOMEBREW_PREFIX}/lib/libsvnjavahl-1.dylib /Library/Java/Extensions/libsvnjavahl-1.dylib
-
       EOS
     end
 
