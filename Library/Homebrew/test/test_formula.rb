@@ -166,9 +166,10 @@ class FormulaTests < Test::Unit::TestCase
 
       bottle do
         sha1 'deadbeefdeadbeefdeadbeefdeadbeefdeadbeef' => :snow_leopard_32
-        sha1 'deadbeefdeadbeefdeadbeefdeadbeefdeadbeef' => :snow_leopard
+        sha1 'faceb00cfaceb00cfaceb00cfaceb00cfaceb00c' => :snow_leopard
         sha1 'baadf00dbaadf00dbaadf00dbaadf00dbaadf00d' => :lion
         sha1 '8badf00d8badf00d8badf00d8badf00d8badf00d' => :mountain_lion
+        sha1 'deadf00ddeadf00ddeadf00ddeadf00ddeadf00d' => :mavericks
       end
 
       def initialize(name="spec_test_ball", path=nil)
@@ -189,7 +190,7 @@ class FormulaTests < Test::Unit::TestCase
 
   def test_path
     name = 'foo-bar'
-    assert_equal Pathname.new("#{HOMEBREW_REPOSITORY}/Library/Formula/#{name}.rb"), Formula.path(name)
+    assert_equal Pathname.new("#{HOMEBREW_LIBRARY}/Formula/#{name}.rb"), Formula.path(name)
   end
 
   def test_factory
