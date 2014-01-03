@@ -117,7 +117,7 @@ class FormulaCreator
   def template; <<-EOS.undent
     require 'formula'
 
-    # Documentation: https://github.com/mxcl/homebrew/wiki/Formula-Cookbook
+    # Documentation: https://github.com/Homebrew/homebrew/wiki/Formula-Cookbook
     #                #{HOMEBREW_CONTRIB}/example-formula.rb
     # PLEASE REMOVE ALL GENERATED COMMENTS BEFORE SUBMITTING YOUR PULL REQUEST!
 
@@ -137,7 +137,7 @@ class FormulaCreator
       depends_on :x11 # if your formula requires any X11/XQuartz components
 
       def install
-        # ENV.j1  # if your formula's build system can't parallelize
+        # ENV.deparallelize  # if your formula fails when building in parallel
 
     <% if mode == :cmake %>
         system "cmake", ".", *std_cmake_args

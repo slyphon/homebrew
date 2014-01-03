@@ -132,14 +132,15 @@ class DependencyCollector
   end
 
   def autotools_dep(spec, tags)
-    unless MacOS::Xcode.provides_autotools?
-      case spec
-      when :libltdl then spec = :libtool
-      else tags << :build
-      end
+    return if MacOS::Xcode.provides_autotools?
 
-      Dependency.new(spec.to_s, tags)
+    if spec == :libltdl
+      spec = :libtool
+      tags << :run
     end
+
+    tags << :build unless tags.include? :run
+    Dependency.new(spec.to_s, tags)
   end
 
   def ant_dep(spec, tags)
@@ -164,6 +165,8 @@ class DependencyCollector
       Dependency.new("fossil", tags)
     when strategy <= BazaarDownloadStrategy
       Dependency.new("bazaar", tags)
+    when strategy <= CVSDownloadStrategy
+      Dependency.new("cvs", tags) unless MacOS::Xcode.provides_cvs?
     when strategy < AbstractDownloadStrategy
       # allow unknown strategies to pass through
     else
@@ -175,6 +178,7 @@ class DependencyCollector
   def parse_url_spec(url, tags)
     case File.extname(url)
     when '.xz'  then Dependency.new('xz', tags)
+    when '.lz'  then Dependency.new('lzip', tags)
     when '.rar' then Dependency.new('unrar', tags)
     when '.7z'  then Dependency.new('p7zip', tags)
     end

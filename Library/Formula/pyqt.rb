@@ -16,17 +16,42 @@ class Pyqt < Formula
     depends_on 'sip'
   end
 
+  def patches
+    # On Mavericks we want to target libc++, but this requires a user specified
+    # qmake makespec. Unfortunately user specified makespecs are broken in the
+    # configure.py script, so we have to fix the makespec path handling logic.
+    # Also qmake spec macro parsing does not properly handle inline comments,
+    # which can result in ignored build flags when they are concatenated together.
+    # Changes proposed upstream: http://www.riverbankcomputing.com/pipermail/pyqt/2013-December/033537.html
+    DATA
+  end
+
   def install
     python do
+
+      # On Mavericks we want to target libc++, this requires a non default qt makespec
+      if ENV.compiler == :clang and MacOS.version >= :mavericks
+        ENV.append "QMAKESPEC", "unsupported/macx-clang-libc++"
+      end
+
       args = [ "--confirm-license",
                "--bindir=#{bin}",
                "--destdir=#{lib}/#{python.xy}/site-packages",
                "--sipdir=#{share}/sip#{python.if3then3}" ]
-      # We need to run "configure.py" so that pyqtconfig.py is generated and
-      # PyQWT needs that. But to do the actual compile, we use the newer
-      # "configure-ng.py" that is recommened in the README.
+      # We need to run "configure.py" so that pyqtconfig.py is generated, which
+      # is needed by PyQWT (and many other PyQt interoperable implementations such
+      # as the ROS GUI libs). This file is currently needed for generating build
+      # files appropriate for the qmake spec that was used to build Qt. This method
+      # is deprecated and will be removed with SIP v5, so we do the actual compile
+      # using the newer configure-ng.py as recommended.
       system python, "configure.py", *args
       (python.site_packages/'PyQt4').install 'pyqtconfig.py'
+
+      # On Mavericks we want to target libc++, this requires a non default qt makespec
+      if ENV.compiler == :clang and MacOS.version >= :mavericks
+        args << "--spec" << "unsupported/macx-clang-libc++"
+      end
+
       system python, "./configure-ng.py", *args
       system "make"
       system "make", "install"
@@ -67,3 +92,29 @@ class Pyqt < Formula
     end
   end
 end
+__END__
+diff --git a/configure.py b/configure.py
+index a8e5dcd..a5f1474 100644
+--- a/configure.py
++++ b/configure.py
+@@ -1886,7 +1886,7 @@ def get_build_macros(overrides):
+     if "QMAKESPEC" in list(os.environ.keys()):
+         fname = os.environ["QMAKESPEC"]
+ 
+-        if not os.path.dirname(fname):
++        if not os.path.dirname(fname) or fname.startswith('unsupported'):
+             qt_macx_spec = fname
+             fname = os.path.join(qt_archdatadir, "mkspecs", fname)
+     elif sys.platform == "darwin":
+@@ -1934,6 +1934,11 @@ def get_build_macros(overrides):
+     if macros is None:
+         return None
+
++    # QMake macros may contain comments on the same line so we need to remove them
++    for macro, value in macros.iteritems():
++        if "#" in value:
++            macros[macro] = value.split("#", 1)[0]
++
+     # Qt5 doesn't seem to support the specific macros so add them if they are
+     # missing.
+     if macros.get("INCDIR_QT", "") == "":
