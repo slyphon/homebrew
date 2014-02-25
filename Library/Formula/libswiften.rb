@@ -10,7 +10,6 @@ class Libswiften < Formula
     depends_on 'lua' => :recommended
   end
 
-  depends_on :python => :build
   depends_on 'scons' => :build
   depends_on 'libidn'
   depends_on 'boost'
@@ -49,7 +48,7 @@ class Libswiften < Formula
     man1.install 'Swift/Packaging/Debian/debian/swiften-config.1' unless build.stable?
   end
 
-  def test
+  test do
     system "#{bin}/swiften-config"
   end
 end

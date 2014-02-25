@@ -3,7 +3,7 @@ brew(1) -- The missing package manager for OS X
 
 ## SYNOPSIS
 
-`brew` --version  
+`brew` --version<br>
 `brew` command [--verbose|-v] [options] [formula] ...
 
 ## DESCRIPTION
@@ -275,6 +275,9 @@ Note that these flags should only appear after a command.
     Remove dead symlinks from the Homebrew prefix. This is generally not
     needed, but can be useful when doing DIY installations.
 
+  * `reinstall` <formula>:
+    Uninstall then install <formula>
+
   * `rm`, `remove`, `uninstall [--force]` <formula>:
     Uninstall <formula>.
 
@@ -509,13 +512,6 @@ can take several different forms:
     greater number of API requests. See
     <http://developer.github.com/v3/#rate-limiting> for more information.
     Homebrew uses the GitHub API for features such as `brew search`.
-
-  * HOMEBREW\_KEEP\_INFO:
-    If set, Homebrew will not remove files from `share/info`, allowing them
-    to be linked from the Cellar. To access these info files, prepend
-    `share/info` to your `INFOPATH` environment variable.
-
-    *Example:* `export INFOPATH='/usr/local/share/info:/usr/share/info'`
 
   * HOMEBREW\_MAKE\_JOBS:
     If set, instructs Homebrew to use the value of `HOMEBREW_MAKE_JOBS` as
