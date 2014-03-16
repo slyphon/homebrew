@@ -29,8 +29,8 @@ class Freetds < Formula
               --mandir=#{man}
             ]
 
-    if build.include? "with-unixodbc"
-      args << "--with-unixodbc=#{Formula.factory('unixodbc').prefix}"
+    if build.with? "unixodbc"
+      args << "--with-unixodbc=#{Formula['unixodbc'].prefix}"
     end
 
     if build.include? "enable-msdblib"

@@ -2,8 +2,11 @@ require 'formula'
 
 class YoutubeDl < Formula
   homepage 'http://rg3.github.io/youtube-dl/'
-  url 'https://yt-dl.org/downloads/2014.02.25/youtube-dl-2014.02.25.tar.gz'
-  sha1 '8af4c222d451e30ba59d3da916b31789e7879e22'
+  # Please only update to versions that are published on PyPi as there are too
+  # many releases for us to update to every single one:
+  # https://pypi.python.org/pypi/youtube_dl
+  url 'https://yt-dl.org/downloads/2014.03.04.1/youtube-dl-2014.03.04.1.tar.gz'
+  sha1 '139a6ef949cf873239c25296a2ea31bbf9f52ebe'
 
   depends_on 'rtmpdump' => :optional
 

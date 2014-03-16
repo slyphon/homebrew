@@ -8,12 +8,12 @@ class Dos2unix < Formula
   depends_on 'gettext'
 
   devel do
-    url 'http://waterlan.home.xs4all.nl/dos2unix/dos2unix-6.0.5-beta4.tar.gz'
-    sha1 '06ff18c3645dd04ef5cfa70c6d26357341b036be'
+    url 'http://waterlan.home.xs4all.nl/dos2unix/dos2unix-6.0.5-beta7.tar.gz'
+    sha1 '0ccd9969ecefd8e578f023c00c7962e1ae1f6333'
   end
 
   def install
-    gettext = Formula.factory("gettext")
+    gettext = Formula["gettext"]
     system "make", "prefix=#{prefix}",
                    "CC=#{ENV.cc}",
                    "CPP=#{ENV.cc}",
