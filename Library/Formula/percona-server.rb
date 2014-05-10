@@ -2,9 +2,15 @@ require 'formula'
 
 class PerconaServer < Formula
   homepage 'http://www.percona.com'
-  url 'http://www.percona.com/redir/downloads/Percona-Server-5.6/Percona-Server-5.6.15-rel63.0/source/Percona-Server-5.6.15-rel63.0.tar.gz'
-  version '5.6.15-rel63.0'
-  sha1 '9a8c856f8dd1c3c0a576b65e9d34354babf82bc9'
+  url 'http://www.percona.com/redir/downloads/Percona-Server-5.6/Percona-Server-5.6.17-65.0/source/tarball/percona-server-5.6.17-65.0.tar.gz'
+  version '5.6.17-65.0'
+  sha1 '48e8a7738c5878951345df378d37712066744028'
+
+  bottle do
+    sha1 "54289ae378b282d66235f2af34ae6b9e4d8bb393" => :mavericks
+    sha1 "13035386e8f3560a4c9fc7893b7fb43bee14a208" => :mountain_lion
+    sha1 "1d2a2c658318a71e1bcdda451c919ba130bc5744" => :lion
+  end
 
   depends_on 'cmake' => :build
   depends_on 'pidof' unless MacOS.version >= :mountain_lion
@@ -35,6 +41,10 @@ class PerconaServer < Formula
   # shared with the mysql and mariadb formulae.
   def datadir
     @datadir ||= (var/'percona').directory? ? var/'percona' : var/'mysql'
+  end
+
+  def pour_bottle?
+    datadir == var/"mysql"
   end
 
   def install
@@ -95,9 +105,6 @@ class PerconaServer < Formula
 
     system "cmake", *args
     system "make"
-    # Reported upstream:
-    # http://bugs.mysql.com/bug.php?id=69645
-    inreplace "scripts/mysql_config", / +-Wno[\w-]+/, ""
     system "make install"
 
     # Don't create databases inside of the prefix!
@@ -105,7 +112,7 @@ class PerconaServer < Formula
     rm_rf prefix+'data'
 
     # Link the setup script into bin
-    ln_s prefix+'scripts/mysql_install_db', bin+'mysql_install_db'
+    bin.install_symlink prefix/"scripts/mysql_install_db"
 
     # Fix up the control script and link into bin
     inreplace "#{prefix}/support-files/mysql.server" do |s|
@@ -114,7 +121,7 @@ class PerconaServer < Formula
       s.gsub!(/pidof/, 'pgrep') if MacOS.version >= :mountain_lion
     end
 
-    ln_s "#{prefix}/support-files/mysql.server", bin
+    bin.install_symlink prefix/"support-files/mysql.server"
 
     # Move mysqlaccess to libexec
     mv "#{bin}/mysqlaccess", libexec

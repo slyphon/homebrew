@@ -2,14 +2,14 @@ require 'formula'
 
 class Passenger < Formula
   homepage 'https://www.phusionpassenger.com/'
-  url 'http://s3.amazonaws.com/phusion-passenger/releases/passenger-4.0.38.tar.gz'
-  sha1 'c1e80c27b3f1c43d91dbd239ddecd4b81e6c13bd'
+  url 'http://s3.amazonaws.com/phusion-passenger/releases/passenger-4.0.42.tar.gz'
+  sha1 'cdc20111ed0bc01e13c6e56f6a6febf54a55b476'
   head 'https://github.com/phusion/passenger.git'
 
   bottle do
-    sha1 "363ea4bcfede79fcc2eb13eb13d7110ba6fb15ce" => :mavericks
-    sha1 "1a85e572065bdf3eaa2bc16dc0db615b220c81be" => :mountain_lion
-    sha1 "8b14e945b72d4de6c9866041fb6ecf9e37a9b4ae" => :lion
+    sha1 "7d5a41e0df41c3e5e9637b251c6870cc097b0f4c" => :mavericks
+    sha1 "fae85438a1297a0ab189c158297fc4d2403bf469" => :mountain_lion
+    sha1 "2ef483097daa6ac6d20e94fed64a942070d90e57" => :lion
   end
 
   depends_on 'pcre'
@@ -28,11 +28,7 @@ class Passenger < Formula
     cp_r necessary_files, libexec, :preserve => true
 
     # Allow Homebrew to create symlinks for the Phusion Passenger commands.
-    bin.mkpath
-    Dir[libexec/"bin/*"].each do |orig_script|
-      name = File.basename(orig_script)
-      ln_s orig_script, bin/name
-    end
+    bin.install_symlink Dir["#{libexec}/bin/*"]
 
     # Ensure that the Phusion Passenger commands can always find their library
     # files.

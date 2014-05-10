@@ -5,20 +5,6 @@ module OS
 
       V4_BUNDLE_ID = "com.apple.dt.Xcode"
       V3_BUNDLE_ID = "com.apple.Xcode"
-      V4_BUNDLE_PATH = Pathname.new("/Applications/Xcode.app")
-      V3_BUNDLE_PATH = Pathname.new("/Developer/Applications/Xcode.app")
-
-      # Locate the "current Xcode folder" via xcode-select. See:
-      # man xcode-select
-      # NOTE!! use Xcode.prefix rather than this generally!
-      def folder
-        @folder ||= `xcode-select -print-path 2>/dev/null`.strip
-      end
-
-      # Xcode 4.3 tools hang if "/" is set
-      def bad_xcode_select_path?
-        folder == "/"
-      end
 
       def latest_version
         case MacOS.version
@@ -47,30 +33,28 @@ module OS
       end
 
       def prefix
-        @prefix ||= begin
-          path = Pathname.new(folder)
-          if path != CLT::MAVERICKS_PKG_PATH and path.absolute? \
-             and File.executable? "#{path}/usr/bin/make"
-            path
-          elsif File.executable? '/Developer/usr/bin/make'
-            # we do this to support cowboys who insist on installing
-            # only a subset of Xcode
-            Pathname.new('/Developer')
-          elsif File.executable? "#{V4_BUNDLE_PATH}/Contents/Developer/usr/bin/make"
-            # fallback for broken Xcode 4.3 installs
-            Pathname.new("#{V4_BUNDLE_PATH}/Contents/Developer")
-          elsif (path = bundle_path)
-            path += "Contents/Developer"
-            path if File.executable? "#{path}/usr/bin/make"
+        @prefix ||=
+          begin
+            dir = MacOS.active_developer_dir
+
+            if dir.empty? || dir == CLT::MAVERICKS_PKG_PATH || !File.directory?(dir)
+              path = bundle_path
+              path.join("Contents", "Developer") if path
+            else
+              Pathname.new(dir)
+            end
           end
-        end
+      end
+
+      def toolchain_path
+        Pathname.new("#{prefix}/Toolchains/XcodeDefault.xctoolchain") if installed? && version >= "4.3"
       end
 
       # Ask Spotlight where Xcode is. If the user didn't install the
       # helper tools and installed Xcode in a non-conventional place, this
       # is our only option. See: http://superuser.com/questions/390757
       def bundle_path
-        MacOS.app_with_bundle_id(V4_BUNDLE_ID) || MacOS.app_with_bundle_id(V3_BUNDLE_ID)
+        MacOS.app_with_bundle_id(V4_BUNDLE_ID, V3_BUNDLE_ID)
       end
 
       def installed?
@@ -90,25 +74,18 @@ module OS
 
         return "0" unless OS.mac?
 
-        # this shortcut makes version work for people who don't realise you
-        # need to install the CLI tools
-        xcode43build = Pathname.new("#{prefix}/usr/bin/xcodebuild")
-        if xcode43build.file?
-          `#{xcode43build} -version 2>/dev/null` =~ /Xcode (\d(\.\d)*)/
-          return $1 if $1
+        %W[#{prefix}/usr/bin/xcodebuild #{which("xcodebuild")}].uniq.each do |path|
+          if File.file? path
+            `#{path} -version 2>/dev/null` =~ /Xcode (\d(\.\d)*)/
+            return $1 if $1
+          end
         end
 
-        # Xcode 4.3 xc* tools hang indefinately if xcode-select path is set thus
-        raise if bad_xcode_select_path?
-
-        raise unless which "xcodebuild"
-        `xcodebuild -version 2>/dev/null` =~ /Xcode (\d(\.\d)*)/
-        raise if $1.nil? or not $?.success?
-        $1
-      rescue
-        # For people who's xcode-select is unset, or who have installed
-        # xcode-gcc-installer or whatever other combinations we can try and
-        # supprt. See https://github.com/Homebrew/homebrew/wiki/Xcode
+        # The remaining logic provides a fake Xcode version for CLT-only
+        # systems. This behavior only exists because Homebrew used to assume
+        # Xcode.version would always be non-nil. This is deprecated, and will
+        # be removed in a future version. To remain compatible, guard usage of
+        # Xcode.version with an Xcode.installed? check.
         case MacOS.llvm_build_version.to_i
         when 1..2063 then "3.1.0"
         when 2064..2065 then "3.1.4"
@@ -170,29 +147,12 @@ module OS
       STANDALONE_PKG_ID = "com.apple.pkg.DeveloperToolsCLILeo"
       FROM_XCODE_PKG_ID = "com.apple.pkg.DeveloperToolsCLI"
       MAVERICKS_PKG_ID = "com.apple.pkg.CLTools_Executables"
-      MAVERICKS_PKG_PATH = Pathname.new("/Library/Developer/CommandLineTools")
+      MAVERICKS_PKG_PATH = "/Library/Developer/CommandLineTools"
 
-      # True if:
-      #  - Xcode < 4.3 is installed. The tools are found under /usr.
-      #  - The "Command Line Tools" package has been installed.
-      #    For OS X < 10.9, the tools are found under /usr. 10.9 always
-      #    includes tools there, which run the real tools inside Xcode on
-      #    Xcode-only installs, so it's necessary to look elsewhere.
+      # Returns true even if outdated tools are installed, e.g.
+      # tools from Xcode 4.x on 10.9
       def installed?
-        if MacOS.version < :mavericks
-          usr_dev_tools?
-        else
-          mavericks_dev_tools?
-        end
-      end
-
-      def mavericks_dev_tools?
-        MacOS.dev_tools_path == Pathname("#{MAVERICKS_PKG_PATH}/usr/bin") &&
-          File.directory?("#{MAVERICKS_PKG_PATH}/usr/include")
-      end
-
-      def usr_dev_tools?
-        MacOS.dev_tools_path == Pathname("/usr/bin") && File.directory?("/usr/include")
+        !!detect_version
       end
 
       def latest_version
@@ -209,7 +169,7 @@ module OS
         version < latest_version
       end
 
-      # Version string (a pretty damn long one) of the CLT package.
+      # Version string (a pretty long one) of the CLT package.
       # Note, that different ways to install the CLTs lead to different
       # version numbers.
       def version

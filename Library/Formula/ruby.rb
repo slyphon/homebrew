@@ -2,8 +2,14 @@ require 'formula'
 
 class Ruby < Formula
   homepage 'https://www.ruby-lang.org/'
-  url 'http://cache.ruby-lang.org/pub/ruby/2.1/ruby-2.1.1.tar.bz2'
-  sha256 '96aabab4dd4a2e57dd0d28052650e6fcdc8f133fa8980d9b936814b1e93f6cfc'
+  url "http://cache.ruby-lang.org/pub/ruby/2.1/ruby-2.1.2.tar.bz2"
+  sha256 "6948b02570cdfb89a8313675d4aa665405900e27423db408401473f30fc6e901"
+
+  bottle do
+    sha1 "9c7a61fa34c47d0c48a23bf28a0d4c9a3f31b273" => :mavericks
+    sha1 "e9e8b27b822b331083f268ac78688e6195d5334a" => :mountain_lion
+    sha1 "ccd62b5dd83229a8dfaf57abf8c1ec131b50b17e" => :lion
+  end
 
   head do
     url 'http://svn.ruby-lang.org/repos/ruby/trunk/'
@@ -28,10 +34,6 @@ class Ruby < Formula
     build 2326
   end
 
-  # pthread_setname_np() is unavailable before Snow Leopard
-  # Reported upstream: https://bugs.ruby-lang.org/issues/9492
-  def patches; DATA; end if MacOS.version < :snow_leopard
-
   def install
     system "autoconf" if build.head?
 
@@ -41,6 +43,7 @@ class Ruby < Formula
     args << "--with-out-ext=tk" if build.without? "tcltk"
     args << "--disable-install-doc" if build.without? "doc"
     args << "--disable-dtrace" unless MacOS::CLT.installed?
+    args << "--without-gmp" if build.without? "gmp"
 
     paths = [
       Formula["libyaml"].opt_prefix,
@@ -53,19 +56,22 @@ class Ruby < Formula
 
     args << "--with-opt-dir=#{paths.join(":")}"
 
+    system "./configure", *args
+    system "make"
+    system "make install"
+  end
+
+  def post_install
     # Put gem, site and vendor folders in the HOMEBREW_PREFIX
     ruby_lib = HOMEBREW_PREFIX/"lib/ruby"
     (ruby_lib/'site_ruby').mkpath
     (ruby_lib/'vendor_ruby').mkpath
     (ruby_lib/'gems').mkpath
 
+    rm_rf Dir["#{lib}/ruby/{site_ruby,vendor_ruby,gems}"]
     (lib/'ruby').install_symlink ruby_lib/'site_ruby',
                                  ruby_lib/'vendor_ruby',
                                  ruby_lib/'gems'
-
-    system "./configure", *args
-    system "make"
-    system "make install"
   end
 
   def caveats; <<-EOS.undent
@@ -85,36 +91,3 @@ class Ruby < Formula
     assert_equal 0, $?.exitstatus
   end
 end
-
-__END__
-diff --git a/thread_pthread.c b/thread_pthread.c
-index 3911f8f..74d1ab7 100644
---- a/thread_pthread.c
-+++ b/thread_pthread.c
-@@ -1416,15 +1416,6 @@ timer_thread_sleep(rb_global_vm_lock_t* unused)
- }
- #endif /* USE_SLEEPY_TIMER_THREAD */
-
--#if defined(__linux__) && defined(PR_SET_NAME)
--# define SET_THREAD_NAME(name) prctl(PR_SET_NAME, name)
--#elif defined(__APPLE__)
--/* pthread_setname_np() on Darwin does not have target thread argument */
--# define SET_THREAD_NAME(name) pthread_setname_np(name)
--#else
--# define SET_THREAD_NAME(name) (void)0
--#endif
--
- static void *
- thread_timer(void *p)
- {
-@@ -1432,7 +1423,9 @@ thread_timer(void *p)
-
-     if (TT_DEBUG) WRITE_CONST(2, "start timer thread\n");
-
--    SET_THREAD_NAME("ruby-timer-thr");
-+#if defined(__linux__) && defined(PR_SET_NAME)
-+    prctl(PR_SET_NAME, "ruby-timer-thr");
-+#endif
-
- #if !USE_SLEEPY_TIMER_THREAD
-     native_mutex_initialize(&timer_thread_lock);

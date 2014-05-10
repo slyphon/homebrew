@@ -29,9 +29,7 @@ class Luarocks < Formula
   # appropriate messaging if not. The check that luarocks does has been
   # seen to have false positives, so remove it.
   # TODO: better document the false positive cases, or remove this patch.
-  def patches
-    DATA
-  end
+  patch :DATA
 
   def install
     # Install to the Cellar, but direct modules to HOMEBREW_PREFIX
@@ -40,9 +38,11 @@ class Luarocks < Formula
             "--sysconfdir=#{etc}/luarocks"]
 
     if build.with? "luajit"
-      args << "--with-lua-include=#{HOMEBREW_PREFIX}/include/luajit-2.0"
+      luajit_prefix = Formula["luajit"].opt_prefix
+
+      args << "--with-lua-include=#{luajit_prefix}/include/luajit-2.0"
       args << "--lua-suffix=jit"
-      args << "--with-lua=luajit"
+      args << "--with-lua=#{luajit_prefix}"
     end
 
     system "./configure", *args

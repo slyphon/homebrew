@@ -2,20 +2,20 @@ require 'formula'
 
 class Pypy < Formula
   homepage 'http://pypy.org/'
-  url 'https://bitbucket.org/pypy/pypy/downloads/pypy-2.2.1-osx64.tar.bz2'
-  version '2.2.1'
-  sha1 'caf13d377fcdced4bfadd4158ba3d18d520396f3'
+  url 'https://bitbucket.org/pypy/pypy/downloads/pypy-2.3-osx64.tar.bz2'
+  version '2.3.0'
+  sha1 'b40c3c56138725757ef0f97ffb67dce89b7665f0'
 
   depends_on :arch => :x86_64
 
   resource 'setuptools' do
-    url 'https://pypi.python.org/packages/source/s/setuptools/setuptools-2.2.tar.gz'
-    sha1 '547eff11ea46613e8a9ba5b12a89c1010ecc4e51'
+    url 'https://pypi.python.org/packages/source/s/setuptools/setuptools-3.6.tar.gz'
+    sha1 '745cbb942f8015dbcbfd9df5cb815adb63c7b0e9'
   end
 
   resource 'pip' do
-    url 'https://pypi.python.org/packages/source/p/pip/pip-1.5.4.tar.gz'
-    sha1 '35ccb7430356186cf253615b70f8ee580610f734'
+    url 'https://pypi.python.org/packages/source/p/pip/pip-1.5.5.tar.gz'
+    sha1 'ce15871b65e412589044ee8a4029fe65bc26b894'
   end
 
   def install
@@ -31,8 +31,7 @@ class Pypy < Formula
     # we want to avoid putting PyPy's Python.h somewhere that configure
     # scripts will find it.
     libexec.install Dir['*']
-    bin.mkpath
-    ln_s libexec/'bin/pypy', bin/'pypy'
+    bin.install_symlink libexec/"bin/pypy"
 
     # Post-install, fix up the site-packages and install-scripts folders
     # so that user-installed Python software survives minor updates, such
@@ -42,7 +41,7 @@ class Pypy < Formula
     prefix_site_packages.mkpath
 
     # Symlink the prefix site-packages into the cellar.
-    ln_s prefix_site_packages, libexec+'site-packages'
+    libexec.install_symlink prefix_site_packages
 
     # Tell distutils-based installers where to put scripts
     scripts_folder.mkpath
@@ -60,12 +59,12 @@ class Pypy < Formula
 
     # Symlink to easy_install_pypy.
     unless (scripts_folder+'easy_install_pypy').exist?
-      ln_s "#{scripts_folder}/easy_install", "#{scripts_folder}/easy_install_pypy"
+      scripts_folder.install_symlink "easy_install" => "easy_install_pypy"
     end
 
     # Symlink to pip_pypy.
     unless (scripts_folder+'pip_pypy').exist?
-      ln_s "#{scripts_folder}/pip", "#{scripts_folder}/pip_pypy"
+      scripts_folder.install_symlink "pip" => "pip_pypy"
     end
   end
 

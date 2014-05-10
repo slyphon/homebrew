@@ -5,14 +5,30 @@ require 'formula'
 # elixir are compatible.
 class Erlang < Formula
   homepage 'http://www.erlang.org'
-  # Download tarball from GitHub; it is served faster than the official tarball.
-  url 'https://github.com/erlang/otp/archive/OTP_R16B03-1.tar.gz'
-  sha1 'b8f6ff90d9eb766984bb63bf553c3be72674d970'
+
+  stable do
+    # Download tarball from GitHub; it is served faster than the official tarball.
+    url 'https://github.com/erlang/otp/archive/OTP_R16B03-1.tar.gz'
+    sha1 'b8f6ff90d9eb766984bb63bf553c3be72674d970'
+
+    # Fixes problem with ODBC on Mavericks. Fixed upstream/HEAD:
+    # https://github.com/erlang/otp/pull/142
+    patch :DATA if MacOS.version >= :mavericks
+  end
 
   devel do
-    url 'http://www.erlang.org/download/otp_src_17.0-rc2.tar.gz'
-    sha1 'bb223dddb59a56c2ec3dba5fe6abfbe3a1400d6e'
-    version '17.0-rc2'
+    url 'https://github.com/erlang/otp/archive/OTP-17.0.tar.gz'
+    sha1 'efa0dd17267ff41d47df94978b7573535c0da775'
+
+    resource 'man' do
+      url 'http://www.erlang.org/download/otp_doc_man_17.0.tar.gz'
+      sha1 '50106b77a527b9369793197c3d07a8abe4e0a62d'
+    end
+
+    resource 'html' do
+      url 'http://www.erlang.org/download/otp_doc_html_17.0.tar.gz'
+      sha1 '9a154d937c548f67f2c4e3691a6f36851a150be9'
+    end
   end
 
   head 'https://github.com/erlang/otp.git', :branch => 'master'
@@ -49,12 +65,6 @@ class Erlang < Formula
   depends_on 'wxmac' => :recommended # for GUI apps like observer
 
   fails_with :llvm
-
-  def patches
-    # Fixes problem with ODBC on Mavericks. Fixed upstream/HEAD:
-    # https://github.com/erlang/otp/pull/142
-    DATA if MacOS.version >= :mavericks && build.stable?
-  end
 
   def install
     ohai "Compilation takes a long time; use `brew install -v erlang` to see progress" unless ARGV.verbose?
@@ -94,10 +104,12 @@ class Erlang < Formula
       args << "--with-dynamic-trace=dtrace"
     end
 
-    unless build.include? 'disable-hipe'
+    if build.include? 'disable-hipe'
       # HIPE doesn't strike me as that reliable on OS X
       # http://syntatic.wordpress.com/2008/06/12/macports-erlang-bus-error-due-to-mac-os-x-1053-update/
       # http://www.erlang.org/pipermail/erlang-patches/2008-September/000293.html
+      args << '--disable-hipe'
+    else
       args << '--enable-hipe'
     end
 

@@ -2,14 +2,15 @@ require 'formula'
 
 class Ffmpeg < Formula
   homepage 'http://ffmpeg.org/'
-  url 'http://ffmpeg.org/releases/ffmpeg-2.1.4.tar.bz2'
-  sha1 '99c2f7af3e6d5f4a962ae8bf627d3c53bc282fec'
+  url 'http://ffmpeg.org/releases/ffmpeg-2.2.2.tar.bz2'
+  sha1 '8a4f282ccb5efbec31a9747d12c8d7b07c481f2e'
+
   head 'git://git.videolan.org/ffmpeg.git'
 
   bottle do
-    sha1 "ddd8f0cce3e64047cd9c77eccc5d23af48ef7814" => :mavericks
-    sha1 "57ed9eb6e22e0d8debf6e528399c643270569a04" => :mountain_lion
-    sha1 "5661800a746ba073b39ade6d5c608dce7a795594" => :lion
+    sha1 "3d92cc6e39cb4a931ba0ef6086a3facccc2a4fb6" => :mavericks
+    sha1 "abdf840749997229d507bb21096b4950430b2664" => :mountain_lion
+    sha1 "65b6fee763e85df649addbe2232e0dec810c7365" => :lion
   end
 
   option "without-x264", "Disable H.264 encoder"
@@ -25,6 +26,8 @@ class Ffmpeg < Formula
   option 'with-ffplay', 'Enable FFplay media player'
   option 'with-tools', 'Enable additional FFmpeg tools'
   option 'with-fdk-aac', 'Enable the Fraunhofer FDK AAC library'
+  option 'with-libvidstab', 'Enable vid.stab support for video stabilization'
+  option 'with-x265', "Enable x265 encoder"
 
   depends_on 'pkg-config' => :build
 
@@ -55,6 +58,8 @@ class Ffmpeg < Formula
   depends_on 'libcaca' => :optional
   depends_on 'libbluray' => :optional
   depends_on 'libquvi' => :optional
+  depends_on 'libvidstab' => :optional
+  depends_on 'x265' => :optional
 
   def install
     args = ["--prefix=#{prefix}",
@@ -93,6 +98,8 @@ class Ffmpeg < Formula
     args << "--enable-frei0r" if build.with? 'frei0r'
     args << "--enable-libcaca" if build.with? 'libcaca'
     args << "--enable-libquvi" if build.with? 'libquvi'
+    args << "--enable-libvidstab" if build.with? 'libvidstab'
+    args << "--enable-libx265" if build.with? 'x265'
 
     if build.with? 'openjpeg'
       args << '--enable-libopenjpeg'

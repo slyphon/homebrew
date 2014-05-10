@@ -9,14 +9,16 @@ class Nload < Formula
     build 2334
   end
 
+  fails_with :clang do
+    cause "ld: internal error: atom not found in symbolIndex(__Z10fromStringIyET_RKNSt3__112basic_stringIcNS1_11char_traitsIcEENS1_9allocatorIcEEEE) for architecture x86_64"
+  end
+
   depends_on :autoconf
   depends_on :automake
 
   # Patching configure.in file to make configure compile on Mac OS.
   # Patch taken from MacPorts.
-  def patches
-    DATA
-  end
+  patch :DATA
 
   def install
     system "./run_autotools"

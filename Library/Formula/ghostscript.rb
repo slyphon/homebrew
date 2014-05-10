@@ -4,16 +4,17 @@ class Ghostscript < Formula
   homepage 'http://www.ghostscript.com/'
 
   stable do
-    url 'http://downloads.ghostscript.com/public/ghostscript-9.10.tar.gz'
-    sha1 '29d6538ae77565c09f399b06455e94e7bcd83d01'
+    url 'http://downloads.ghostscript.com/public/ghostscript-9.14.tar.gz'
+    sha1 '85001be316ebc11a6060ae7e208fe08dcbfd70ae'
 
     patch :DATA # Uncomment OS X-specific make vars
   end
 
   bottle do
-    sha1 "be9d9be82c03ac8409994fee0cc638d20ceb145c" => :mavericks
-    sha1 "667bbb27e64fee6d46da07c98205a6daf51a28ad" => :mountain_lion
-    sha1 "fb6e8756db2016f88eeb23ed392a9742096efef3" => :lion
+    revision 1
+    sha1 "308a8f34a919cf8b7aaa919b74aa3bc7606cf24f" => :mavericks
+    sha1 "db1b4c91a40cedba2386ced95bd63f9bcb832efa" => :mountain_lion
+    sha1 "b63f8d414e7e07ac554c5869385e7cb657c3a26a" => :lion
   end
 
   head do
@@ -41,10 +42,10 @@ class Ghostscript < Formula
   depends_on 'libtiff'
   depends_on 'jbig2dec'
   depends_on 'little-cms2'
-  depends_on :libpng
+  depends_on 'libpng'
   depends_on :x11 => ['2.7.2', :optional]
   depends_on 'djvulibre' if build.with? 'djvu'
-  depends_on 'freetype' if MacOS.version == :snow_leopard
+  depends_on 'freetype'
 
   conflicts_with 'gambit-scheme', :because => 'both install `gsc` binaries'
 
@@ -64,7 +65,7 @@ class Ghostscript < Formula
     # If the install version of any of these doesn't match
     # the version included in ghostscript, we get errors
     # Taken from the MacPorts portfile - http://bit.ly/ghostscript-portfile
-    renames = %w{freetype jbig2dec jpeg libpng tiff zlib}
+    renames = %w{freetype jbig2dec jpeg libpng tiff}
     renames.each { |lib| mv lib, "#{lib}_local" }
   end
 
@@ -76,7 +77,7 @@ class Ghostscript < Formula
       (buildpath+'base').install 'gdevdjvu.c'
       (buildpath+'lib').install 'ps2utf8.ps'
       ENV['EXTRA_INIT_FILES'] = 'ps2utf8.ps'
-      (buildpath/'base/contrib.mak').open('a') { |f| f.write(File.read('gsdjvu.mak')) }
+      (buildpath/'devices/contrib.mak').open('a') { |f| f.write(File.read('gsdjvu.mak')) }
     end if build.with? 'djvu'
 
     cd src_dir do

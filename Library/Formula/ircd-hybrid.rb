@@ -2,8 +2,8 @@ require 'formula'
 
 class IrcdHybrid < Formula
   homepage 'http://www.ircd-hybrid.org/'
-  url 'https://downloads.sourceforge.net/project/ircd-hybrid/ircd-hybrid/ircd-hybrid-8.1.13/ircd-hybrid-8.1.13.tgz'
-  sha1 '5874cf6972333b4944cc218cd21918a2120e0304'
+  url 'https://downloads.sourceforge.net/project/ircd-hybrid/ircd-hybrid/ircd-hybrid-8.1.15/ircd-hybrid-8.1.15.tgz'
+  sha1 '4870009a26eeb1ca844402e5a15783d3cbfc917e'
 
   # ircd-hybrid needs the .la files
   skip_clean :la
@@ -25,7 +25,7 @@ class IrcdHybrid < Formula
   end
 
   test do
-    system "#{sbin}/ircd", "-version"
+    system "#{bin}/ircd", "-version"
   end
 
   def caveats; <<-EOS.undent

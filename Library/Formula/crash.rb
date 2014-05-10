@@ -2,23 +2,23 @@ require 'formula'
 
 class Crash < Formula
   homepage 'http://www.crashub.org/'
-  url 'https://crsh.googlecode.com/files/crash-1.2.8.tar.gz'
-  sha1 '12290cd227b20eae07674f8cf0d43ee58732e34b'
+  url 'http://search.maven.org/remotecontent?filepath=org/crsh/crsh.distrib/1.2.9/crsh.distrib-1.2.9.tar.gz'
+  sha1 '7e0f066ea398e76bdabe0ed715a4ac188597c4f4'
 
   devel do
-    url 'https://crsh.googlecode.com/files/crash-1.3.0-beta14.tar.gz'
-    sha1 '80ba0af7c951998094761160d1b034c712d9eccc'
+    url 'http://search.maven.org/remotecontent?filepath=org/crashub/crash.distrib/1.3.0-beta17/crash.distrib-1.3.0-beta17.tar.gz'
+    sha1 '2eecfc14fdcaa0b59e78a9e01b5da13e93c5b66c'
 
     resource 'docs' do
-      url 'https://crsh.googlecode.com/files/crash-1.3.0-beta14-docs.tar.gz'
-      version '1.3.0-beta14'
-      sha1 '7876c9a176361ae13de5ae505f1e3e5df642416b'
+      url 'http://search.maven.org/remotecontent?filepath=org/crashub/crash.distrib/1.3.0-beta17/crash.distrib-1.3.0-beta17-docs.tar.gz'
+      version '1.3.0-beta17'
+      sha1 '73f5bd2a63ddbb8250cc406287e570d0cf42d36f'
     end
   end
 
   resource 'docs' do
-    url 'https://crsh.googlecode.com/files/crash-1.2.8-docs.tar.gz'
-    sha1 'ea385cf28c9c8fc0512d8809bf511c37a5be8e1a'
+    url 'http://search.maven.org/remotecontent?filepath=org/crsh/crsh.distrib/1.2.9/crsh.distrib-1.2.9-docs.tar.gz'
+    sha1 '134ebdb9b77f0916f73101154ea475e49ca57fe3'
   end
 
   def install

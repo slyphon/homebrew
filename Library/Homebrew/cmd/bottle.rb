@@ -83,6 +83,19 @@ module Homebrew extend self
       result = true
     end
 
+    index = 0
+    keg.find do |pn|
+      if pn.symlink? && (link = pn.readlink).absolute?
+        if link.to_s.start_with?(string)
+          opoo "Absolute symlink starting with #{string}:" if index.zero?
+          puts "  #{pn} -> #{pn.resolved_path}"
+        end
+
+        index += 1
+        result = true
+      end
+    end
+
     result
   end
 
@@ -227,8 +240,11 @@ module Homebrew extend self
           end
         end
 
+        version = f.version.to_s
+        version += "_#{f.revision}" if f.revision.to_i > 0
+
         safe_system 'git', 'commit', '--no-edit', '--verbose',
-          "--message=#{f.name}: #{update_or_add} #{f.version} bottle.",
+          "--message=#{f.name}: #{update_or_add} #{version} bottle.",
           '--', f.path
       end
     end

@@ -2,21 +2,21 @@ require 'formula'
 
 class Nginx < Formula
   homepage 'http://nginx.org/'
-  url 'http://nginx.org/download/nginx-1.4.6.tar.gz'
-  sha1 '1d790fd2b403b0b694a8dbbc28f7e34dbc3ca863'
+  url 'http://nginx.org/download/nginx-1.6.0.tar.gz'
+  sha1 '00eed38652d2cee36cc91a395f6703584658bb23'
+  revision 1
 
   devel do
-    url 'http://nginx.org/download/nginx-1.5.11.tar.gz'
-    sha1 'c52239582d67063ab40ec2f88aa82ffb3eb8f469'
+    url 'http://nginx.org/download/nginx-1.7.0.tar.gz'
+    sha1 'e406cb9f1c17a0d9ff5df926412fce948bfea7de'
   end
 
   head 'http://hg.nginx.org/nginx/', :using => :hg
 
   bottle do
-    revision 1
-    sha1 "0e0388d8077de0f985662fab65f22c49a4525f33" => :mavericks
-    sha1 "0c1d1d70815f4e0a1a213a2a888740aac839cb97" => :mountain_lion
-    sha1 "706403994b8ec210a9fd027820107f1684988d12" => :lion
+    sha1 "0b2a83221a85da1595e52ba61f0bc39a8905db71" => :mavericks
+    sha1 "51e55866a2810d4544ad4004cdd1e2cf2dd4d6f6" => :mountain_lion
+    sha1 "4bb95425d1bca66163b4d212084ae564c13b49d7" => :lion
   end
 
   env :userpaths
@@ -87,31 +87,31 @@ class Nginx < Formula
     system "make install"
     man8.install "objs/nginx.8"
     (var/'run/nginx').mkpath
+  end
 
+  def post_install
     # nginx's docroot is #{prefix}/html, this isn't useful, so we symlink it
     # to #{HOMEBREW_PREFIX}/var/www. The reason we symlink instead of patching
     # is so the user can redirect it easily to something else if they choose.
-    prefix.cd do
-      dst = HOMEBREW_PREFIX/"var/www"
-      if not dst.exist?
-        dst.dirname.mkpath
-        mv "html", dst
-      else
-        rm_rf "html"
-        dst.mkpath
-      end
-      Pathname.new("#{prefix}/html").make_relative_symlink(dst)
+    html = prefix/"html"
+    dst  = var/"www"
+
+    if dst.exist?
+      html.rmtree
+      dst.mkpath
+    else
+      dst.dirname.mkpath
+      html.rename(dst)
     end
+
+    prefix.install_symlink dst => "html"
 
     # for most of this formula's life the binary has been placed in sbin
     # and Homebrew used to suggest the user copy the plist for nginx to their
     # ~/Library/LaunchAgents directory. So we need to have a symlink there
     # for such cases
-    if (HOMEBREW_CELLAR/'nginx').subdirs.any?{|d| (d/:sbin).directory? }
-      sbin.mkpath
-      sbin.cd do
-        (sbin/'nginx').make_relative_symlink(bin/'nginx')
-      end
+    if rack.subdirs.any? { |d| (d/:sbin).directory? }
+      sbin.install_symlink bin/"nginx"
     end
   end
 

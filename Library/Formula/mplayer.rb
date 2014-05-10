@@ -2,10 +2,32 @@ require 'formula'
 
 class Mplayer < Formula
   homepage 'http://www.mplayerhq.hu/'
-  url 'http://www.mplayerhq.hu/MPlayer/releases/MPlayer-1.1.1.tar.xz'
-  sha1 'ba2f3bd1442d04b17b0143680850273d928689c1'
 
-  head 'svn://svn.mplayerhq.hu/mplayer/trunk', :using => StrictSubversionDownloadStrategy
+  stable do
+    url "http://www.mplayerhq.hu/MPlayer/releases/MPlayer-1.1.1.tar.xz"
+    sha1 "ba2f3bd1442d04b17b0143680850273d928689c1"
+
+    # Fix compilation on 10.9, adapted from upstream revision r36500
+    patch do
+      url "https://gist.githubusercontent.com/jacknagel/7441175/raw/37657c264a6a3bb4d30dee14538c367f7ffccba9/vo_corevideo.h.patch"
+      sha1 "92717335aed9ec5d01fcf62f9787c6d50cf5d911"
+    end
+  end
+
+  bottle do
+    revision 1
+    sha1 "2c9bfd124fdd729bc8addd2ddfd45ed718c80e20" => :mavericks
+    sha1 "ba213d5c1aadad6869cbb57f17f56971af8acffd" => :mountain_lion
+    sha1 "7efc5960bc15c904a2893f23190d783b3d57d27a" => :lion
+  end
+
+  head do
+    url "svn://svn.mplayerhq.hu/mplayer/trunk", :using => StrictSubversionDownloadStrategy
+
+    # When building SVN, configure prompts the user to pull FFmpeg from git.
+    # Don't do that.
+    patch :DATA
+  end
 
   option 'with-x', 'Build with X11 support'
   option 'without-osd', 'Build without OSD'
@@ -17,27 +39,15 @@ class Mplayer < Formula
   if build.with? 'osd' or build.with? 'x'
     # These are required for the OSD. We can get them from X11, or we can
     # build our own.
-    depends_on :fontconfig
-    depends_on :freetype
+    depends_on "fontconfig"
+    depends_on "freetype"
+    depends_on "libpng"
   end
 
   fails_with :clang do
     build 211
     cause 'Inline asm errors during compile on 32bit Snow Leopard.'
   end unless MacOS.prefer_64_bit?
-
-  def patches
-    p = []
-    if build.head?
-      # When building SVN, configure prompts the user to pull FFmpeg from git.
-      # Don't do that.
-      p << DATA
-    else
-      # Fix compilation on 10.9, adapted from upstream revision r36500
-      p << "https://gist.github.com/jacknagel/7441175/raw/37657c264a6a3bb4d30dee14538c367f7ffccba9/vo_corevideo.h.patch"
-    end
-    p
-  end
 
   def install
     # It turns out that ENV.O1 fixes link errors with llvm.
@@ -59,6 +69,7 @@ class Mplayer < Formula
 
     args << "--enable-menu" if build.with? 'osd'
     args << "--disable-x11" if build.without? 'x'
+    args << "--enable-freetype" if build.with?('osd') || build.with?('x')
     args << "--enable-caca" if build.with? 'libcaca'
 
     system "./configure", *args

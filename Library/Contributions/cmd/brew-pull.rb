@@ -32,7 +32,7 @@ ARGV.named.each do |arg|
 
   if tap_name = tap(url)
     user = url_match[1].downcase
-    tap_dir = HOMEBREW_REPOSITORY/"Library/Taps/#{user}-#{tap_name}"
+    tap_dir = HOMEBREW_REPOSITORY/"Library/Taps/#{user}/homebrew-#{tap_name}"
     safe_system "brew", "tap", "#{user}/#{tap_name}" unless tap_dir.exist?
     Dir.chdir tap_dir
   else
@@ -81,8 +81,10 @@ ARGV.named.each do |arg|
     status, filename = line.split
     # Don't try and do anything to removed files.
     if (status =~ /A|M/) && (filename =~ %r{Formula/.+\.rb$}) || tap(url)
-      formula = File.basename(filename, '.rb')
-      changed_formulae << Formula.factory(formula)
+      formula_name = File.basename(filename, '.rb')
+      formula = Formula[formula_name] rescue nil
+      next unless formula
+      changed_formulae << formula
     end
   end
 

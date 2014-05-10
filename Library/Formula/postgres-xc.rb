@@ -7,6 +7,7 @@ class PostgresXc < Formula
 
   depends_on :arch => :x86_64
   depends_on :python => :recommended
+  depends_on 'openssl'
   depends_on 'readline'
   depends_on 'libxml2' if MacOS.version <= :leopard # Leopard libxml is too old
   depends_on 'ossp-uuid' => :recommended
@@ -24,9 +25,7 @@ class PostgresXc < Formula
 
   # Fix PL/Python build: https://github.com/Homebrew/homebrew/issues/11162
   # Fix uuid-ossp build issues: http://archives.postgresql.org/pgsql-general/2012-07/msg00654.php
-  def patches
-    DATA
-  end
+  patch :DATA
 
   def install
     ENV.libxml2 if MacOS.version >= :snow_leopard

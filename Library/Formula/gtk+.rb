@@ -2,13 +2,14 @@ require 'formula'
 
 class Gtkx < Formula
   homepage 'http://gtk.org/'
-  url 'http://ftp.gnome.org/pub/gnome/sources/gtk+/2.24/gtk+-2.24.22.tar.xz'
-  sha256 'b114b6e9fb389bf3aa8a6d09576538f58dce740779653084046852fb4140ae7f'
+  url 'http://ftp.gnome.org/pub/gnome/sources/gtk+/2.24/gtk+-2.24.23.tar.xz'
+  sha256 'a0a406e27e9b5e7d6b2c4334212706ed5cdcd41e713e66c9ae950655dd61517c'
 
   bottle do
-    sha1 "eb029bd3457b4928b7186b33091eb41df18f468d" => :mavericks
-    sha1 "f28d77d1220574a9ec9b8910c2b6ab61a5b742df" => :mountain_lion
-    sha1 "2cb6f9dfa6b11fedca439c5983f3723b4e852f85" => :lion
+    revision 1
+    sha1 "dfa2e62f652ed55e60b5b6c29cec646971c9a501" => :mavericks
+    sha1 "2e6b6f288ddc866baaef673867bd402bf5e1b0dd" => :mountain_lion
+    sha1 "a164ed8199f61834a6bd852b2d7bb4bc580f9ff5" => :lion
   end
 
   depends_on 'pkg-config' => :build
@@ -21,6 +22,7 @@ class Gtkx < Formula
   depends_on 'atk'
   depends_on 'cairo'
   depends_on :x11 => '2.3.6'
+  depends_on 'gobject-introspection'
 
   fails_with :llvm do
     build 2326
@@ -31,7 +33,7 @@ class Gtkx < Formula
     system "./configure", "--disable-dependency-tracking",
                           "--prefix=#{prefix}",
                           "--disable-glibtest",
-                          "--disable-introspection",
+                          "--enable-introspection=yes",
                           "--disable-visibility"
     system "make install"
   end
