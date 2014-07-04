@@ -1,3 +1,5 @@
+require "formula"
+
 class FormulaVersions
   IGNORED_EXCEPTIONS = [
     ArgumentError, NameError, SyntaxError, TypeError,
@@ -52,13 +54,13 @@ class FormulaVersions
   end
 
   def formula_at_revision rev, &block
-    f.mktemp do
+    FileUtils.mktemp(f.name) do
       path = Pathname.pwd.join("#{f.name}.rb")
       path.write file_contents_at_revision(rev)
 
       begin
         old_const = Formulary.unload_formula(f.name)
-        nostdout { yield Formula.factory(path.to_s) }
+        nostdout { yield Formulary.factory(path.to_s) }
       rescue *IGNORED_EXCEPTIONS => e
         # We rescue these so that we can skip bad versions and
         # continue walking the history

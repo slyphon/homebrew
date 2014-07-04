@@ -2,7 +2,7 @@ require 'testing_env'
 require 'keg'
 require 'stringio'
 
-class LinkTests < Test::Unit::TestCase
+class LinkTests < Homebrew::TestCase
   include FileUtils
 
   def setup
@@ -25,9 +25,19 @@ class LinkTests < Test::Unit::TestCase
     mkpath HOMEBREW_PREFIX/"lib"
   end
 
+  def teardown
+    @keg.unlink
+    @keg.uninstall
+
+    $stdout = @old_stdout
+
+    rmtree HOMEBREW_PREFIX/"bin"
+    rmtree HOMEBREW_PREFIX/"lib"
+  end
+
   def test_linking_keg
     assert_equal 3, @keg.link
-    (HOMEBREW_PREFIX/"bin").children.each { |c| assert c.readlink.relative? }
+    (HOMEBREW_PREFIX/"bin").children.each { |c| assert_predicate c.readlink, :relative? }
   end
 
   def test_unlinking_keg
@@ -39,7 +49,7 @@ class LinkTests < Test::Unit::TestCase
     @mode.dry_run = true
 
     assert_equal 0, @keg.link(@mode)
-    assert !@keg.linked?
+    refute_predicate @keg, :linked?
 
     ['hiworld', 'helloworld', 'goodbye_cruel_world'].each do |file|
       assert_match "#{HOMEBREW_PREFIX}/bin/#{file}", $stdout.string
@@ -49,14 +59,14 @@ class LinkTests < Test::Unit::TestCase
 
   def test_linking_fails_when_already_linked
     @keg.link
-    assert_raise Keg::AlreadyLinkedError do
+    assert_raises Keg::AlreadyLinkedError do
       shutup { @keg.link }
     end
   end
 
   def test_linking_fails_when_files_exist
     touch HOMEBREW_PREFIX/"bin/helloworld"
-    assert_raise Keg::ConflictError do
+    assert_raises Keg::ConflictError do
       shutup { @keg.link }
     end
   end
@@ -73,6 +83,7 @@ class LinkTests < Test::Unit::TestCase
     touch HOMEBREW_PREFIX/"bin/helloworld"
     @mode.overwrite = true
     assert_equal 3, @keg.link(@mode)
+    assert_predicate @keg, :linked?
   end
 
   def test_link_overwrite_broken_symlinks
@@ -81,6 +92,7 @@ class LinkTests < Test::Unit::TestCase
     end
     @mode.overwrite = true
     assert_equal 3, @keg.link(@mode)
+    assert_predicate @keg, :linked?
   end
 
   def test_link_overwrite_dryrun
@@ -89,7 +101,7 @@ class LinkTests < Test::Unit::TestCase
     @mode.dry_run = true
 
     assert_equal 0, @keg.link(@mode)
-    assert !@keg.linked?
+    refute_predicate @keg, :linked?
 
     assert_equal "#{HOMEBREW_PREFIX}/bin/helloworld\n", $stdout.string
   end
@@ -101,7 +113,7 @@ class LinkTests < Test::Unit::TestCase
 
     @keg.unlink
 
-    assert !File.directory?(HOMEBREW_PREFIX/"lib/foo")
+    refute_predicate HOMEBREW_PREFIX/"lib/foo", :directory?
   end
 
   def test_unlink_ignores_DS_Store_when_pruning_empty_dirs
@@ -112,17 +124,46 @@ class LinkTests < Test::Unit::TestCase
 
     @keg.unlink
 
-    assert !File.directory?(HOMEBREW_PREFIX/"lib/foo")
-    assert !File.exist?(HOMEBREW_PREFIX/"lib/foo/.DS_Store")
+    refute_predicate HOMEBREW_PREFIX/"lib/foo", :directory?
+    refute_predicate HOMEBREW_PREFIX/"lib/foo/.DS_Store", :exist?
   end
 
-  def teardown
+  def test_linking_creates_opt_link
+    refute_predicate @keg, :optlinked?
+    @keg.link
+    assert_predicate @keg, :optlinked?
+  end
+
+  def test_unlinking_does_not_remove_opt_link
+    @keg.link
     @keg.unlink
-    @keg.rmtree
+    assert_predicate @keg, :optlinked?
+  end
 
-    $stdout = @old_stdout
+  def test_existing_opt_link
+    @keg.opt_record.make_relative_symlink Pathname.new(@keg)
+    @keg.optlink
+    assert_predicate @keg, :optlinked?
+  end
 
-    rmtree HOMEBREW_PREFIX/"bin"
-    rmtree HOMEBREW_PREFIX/"lib"
+  def test_existing_opt_link_directory
+    @keg.opt_record.mkpath
+    @keg.optlink
+    assert_predicate @keg, :optlinked?
+  end
+
+  def test_existing_opt_link_file
+    @keg.opt_record.parent.mkpath
+    @keg.opt_record.write("foo")
+    @keg.optlink
+    assert_predicate @keg, :optlinked?
+  end
+
+  def test_linked_keg
+    refute_predicate @keg, :linked?
+    @keg.link
+    assert_predicate @keg, :linked?
+    @keg.unlink
+    refute_predicate @keg, :linked?
   end
 end
