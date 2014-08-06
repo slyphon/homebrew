@@ -24,12 +24,13 @@ class Wine < Formula
   end
 
   devel do
-    url "https://downloads.sourceforge.net/project/wine/Source/wine-1.7.21.tar.bz2"
-    sha256 "a14723104135c21414c61e146144a2c527430057255f8c35a3a7d354e68b9401"
+    url "https://downloads.sourceforge.net/project/wine/Source/wine-1.7.23.tar.bz2"
+    sha256 "db9c7b3b87edde7c63b2c5ae81631771b03650d7435461139fca2b177de05c04"
 
-    # http://bugs.winehq.org/show_bug.cgi?id=34166
+    # Patch to fix screen-flickering issues. Still relevant on 1.7.23.
+    # https://bugs.winehq.org/show_bug.cgi?id=34166
     patch do
-      url "http://bugs.winehq.org/attachment.cgi?id=47639"
+      url "https://bugs.winehq.org/attachment.cgi?id=47639"
       sha1 "c195f4b9c0af450c7dc3f396e8661ea5248f2b01"
     end
   end
@@ -102,6 +103,9 @@ class Wine < Formula
 
     ENV.append "CFLAGS", build32
     ENV.append "LDFLAGS", build32
+
+    # Help configure find libxml2 in an XCode only (no CLT) installation.
+    ENV.libxml2
 
     args = ["--prefix=#{prefix}"]
     args << "--disable-win16" if MacOS.version <= :leopard or ENV.compiler == :clang

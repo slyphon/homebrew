@@ -47,20 +47,22 @@ module SharedEnvExtension
   def append keys, value, separator = ' '
     value = value.to_s
     Array(keys).each do |key|
-      unless self[key].to_s.empty?
-        self[key] = self[key] + separator + value
-      else
+      old = self[key]
+      if old.nil? || old.empty?
         self[key] = value
+      else
+        self[key] += separator + value
       end
     end
   end
   def prepend keys, value, separator = ' '
     value = value.to_s
     Array(keys).each do |key|
-      unless self[key].to_s.empty?
-        self[key] = value + separator + self[key]
-      else
+      old = self[key]
+      if old.nil? || old.empty?
         self[key] = value
+      else
+        self[key] = value + separator + old
       end
     end
   end
@@ -83,7 +85,7 @@ module SharedEnvExtension
     Array(keys).each do |key|
       next unless self[key]
       self[key] = self[key].sub(value, '')
-      delete(key) if self[key].to_s.empty?
+      delete(key) if self[key].empty?
     end if value
   end
 
@@ -128,7 +130,15 @@ module SharedEnvExtension
   # an alternate compiler, altering the value of environment variables.
   # If no valid compiler is found, raises an exception.
   def validate_cc!(formula)
-    if formula.fails_with? compiler
+    # FIXME
+    # The compiler object we pass to fails_with? has no version information
+    # attached to it. This means that if we pass Compiler.new(:clang), the
+    # selector will be invoked if the formula fails with any version of clang.
+    # I think we can safely remove this conditional and always invoke the
+    # selector.
+    # The compiler priority logic in compilers.rb and default_compiler logic in
+    # os/mac.rb need to be unified somehow.
+    if formula.fails_with? Compiler.new(compiler)
       send CompilerSelector.new(formula).compiler
     end
   end
@@ -196,15 +206,12 @@ module SharedEnvExtension
     gcc_name = "gcc-#{version}"
     gcc_version_name = "gcc#{version.delete('.')}"
 
-    ivar = "@#{gcc_version_name}_version"
-    return instance_variable_get(ivar) if instance_variable_defined?(ivar)
-
     gcc_path = HOMEBREW_PREFIX.join "opt/gcc/bin/#{gcc_name}"
     gcc_formula = Formulary.factory "gcc"
     gcc_versions_path = \
       HOMEBREW_PREFIX.join "opt/#{gcc_version_name}/bin/#{gcc_name}"
 
-    formula = if gcc_path.exist?
+    if gcc_path.exist?
       gcc_formula
     elsif gcc_versions_path.exist?
       Formulary.factory gcc_version_name
@@ -215,8 +222,6 @@ module SharedEnvExtension
     else
       gcc_formula
     end
-
-    instance_variable_set(ivar, formula)
   end
 
   def warn_about_non_apple_gcc(gcc)

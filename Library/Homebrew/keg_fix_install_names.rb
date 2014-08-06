@@ -86,7 +86,7 @@ class Keg
   end
 
   def each_unique_file_matching string
-    IO.popen("/usr/bin/fgrep -lr '#{string}' '#{self}' 2>/dev/null", "rb") do |io|
+    Utils.popen_read("/usr/bin/fgrep", "-lr", string, to_s) do |io|
       hardlinks = Set.new
 
       until io.eof?
@@ -151,7 +151,7 @@ class Keg
 
   def mach_o_files
     mach_o_files = []
-    dirs = %w{bin lib Frameworks}
+    dirs = %w{bin sbin lib Frameworks}
     dirs.map! { |dir| path.join(dir) }
     dirs.reject! { |dir| not dir.directory? }
 
