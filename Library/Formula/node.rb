@@ -3,19 +3,18 @@ require "formula"
 # Note that x.even are stable releases, x.odd are devel releases
 class Node < Formula
   homepage "http://nodejs.org/"
-  url "http://nodejs.org/dist/v0.10.30/node-v0.10.30.tar.gz"
-  sha1 "bcef88d76c39147c79a28aa9e5d484564eb3ba7e"
+  url "http://nodejs.org/dist/v0.10.32/node-v0.10.32.tar.gz"
+  sha256 "c2120d0e3d2d191654cb11dbc0a33a7216d53732173317681da9502be0030f10"
 
   bottle do
-    revision 2
-    sha1 "13bfa93051be6de7753d7e3988471e84ea56a9bb" => :mavericks
-    sha1 "25b4822c9c76fbb4a76a01b4b8ed9ed9c92123af" => :mountain_lion
-    sha1 "08d9cad79dda3c02a9cbd3616eda34f2b7ad7b20" => :lion
+    sha1 "f9f083a1cf13cf3703c764d639702627968e2234" => :mavericks
+    sha1 "83a01d1079ed1bc02a7c9fc7cefa589027778b15" => :mountain_lion
+    sha1 "a2dbe4a3358e98813fbc6c83cfa79120177e6fc8" => :lion
   end
 
   devel do
-    url "http://nodejs.org/dist/v0.11.13/node-v0.11.13.tar.gz"
-    sha1 "da4a9adb73978710566f643241b2c05fb8a97574"
+    url "http://nodejs.org/dist/v0.11.14/node-v0.11.14.tar.gz"
+    sha256 "ce08b0a2769bcc135ca25639c9d411a038e93e0f5f5a83000ecde9b763c4dd83"
   end
 
   head "https://github.com/joyent/node.git"
@@ -31,8 +30,8 @@ class Node < Formula
   end
 
   resource "npm" do
-    url "http://registry.npmjs.org/npm/-/npm-1.4.9.tgz"
-    sha1 "29094f675dad69fc5ea24960a81c7abbfca5ce01"
+    url "https://registry.npmjs.org/npm/-/npm-1.4.24.tgz"
+    sha1 "78125bb55dc592b9cbf4aff44e33d5d81c9471af"
   end
 
   def install
@@ -56,8 +55,9 @@ class Node < Formula
     npmrc = npm_root/"npmrc"
     npmrc.atomic_write("prefix = #{HOMEBREW_PREFIX}\n")
 
+    ENV["NPM_CONFIG_USERCONFIG"] = npmrc
     npm_root.cd { system "make", "install" }
-    system "#{HOMEBREW_PREFIX}/bin/npm", "update", "npm", "-g",
+    system "#{HOMEBREW_PREFIX}/bin/npm", "install", "--global", "npm@latest",
                                          "--prefix", HOMEBREW_PREFIX
 
     Pathname.glob(npm_root/"man/*") do |man|
@@ -89,6 +89,6 @@ class Node < Formula
     assert_equal "hello", output
     assert_equal 0, $?.exitstatus
 
-    system "#{HOMEBREW_PREFIX}/bin/npm", "install", "npm" if build.with? "npm"
+    system "#{HOMEBREW_PREFIX}/bin/npm", "install", "npm@latest" if build.with? "npm"
   end
 end

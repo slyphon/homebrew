@@ -8,9 +8,9 @@ class Groovy < Formula
   option 'invokedynamic', "Install the InvokeDynamic version of Groovy (only works with Java 1.7+)"
 
   devel do
-    url 'http://dl.bintray.com/groovy/maven/groovy-binary-2.4.0-beta-1.zip'
-    sha1 '2aab7e3d1989cc1e923b965dfb076f7030520e0d'
-    version '2.4.0-beta-1'
+    url 'http://dl.bintray.com/groovy/maven/groovy-binary-2.4.0-beta-3.zip'
+    sha1 'a797630fd6a8e9818fb9ae0de2a4085b1d1ec795'
+    version '2.4.0-beta-3'
   end
 
   def install

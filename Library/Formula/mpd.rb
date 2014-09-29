@@ -2,16 +2,13 @@ require 'formula'
 
 class Mpd < Formula
   homepage "http://www.musicpd.org/"
-
-  stable do
-    url "http://www.musicpd.org/download/mpd/0.18/mpd-0.18.12.tar.xz"
-    sha1 "99ba27a541cb18fcd093d93551d34c1c3145ba49"
-  end
+  url "http://www.musicpd.org/download/mpd/0.18/mpd-0.18.16.tar.xz"
+  sha1 "ef510446e858fadf20d36fa2c1bed6f35a51e613"
 
   bottle do
-    sha1 "ab143fb0d51c515e3843f5d9ec94049c38dee147" => :mavericks
-    sha1 "3a9031df83d678a8bfe8ee3a44df5fb9582acacd" => :mountain_lion
-    sha1 "a378b8824edd4324823a6be70cbb6ff301ecc90d" => :lion
+    sha1 "bb1bfadd7c3b4c4e4d5cea14acc80d0c87e4aa61" => :mavericks
+    sha1 "2afd32a8d9e04f0f930aef40e7012e496ac790ee" => :mountain_lion
+    sha1 "dce3da5bd0af773861c694ac4b33faa6797341b3" => :lion
   end
 
   head do
@@ -27,6 +24,7 @@ class Mpd < Formula
   option "with-flac", "Build with flac support (for Flac encoding when streaming)"
   option "with-vorbis", "Build with vorbis support (for Ogg encoding)"
   option "with-yajl", "Build with yajl support (for playing from soundcloud)"
+  option "with-opus", "Build with opus support (for Opus encoding and decoding)"
 
   if MacOS.version < :lion
     option "with-libwrap", "Build with libwrap (TCP Wrappers) support"
@@ -57,6 +55,7 @@ class Mpd < Formula
   depends_on "libmms" => :optional      # MMS input
   depends_on "libzzip" => :optional     # Reading from within ZIPs
   depends_on "yajl" => :optional        # JSON library for SoundCloud
+  depends_on "opus" => :optional        # Opus support
 
   depends_on "libvorbis" if build.with? "vorbis" # Vorbis support
 
@@ -115,6 +114,31 @@ class Mpd < Formula
         --lastfm            -> --with-lastfm
         --libwrap           -> --with-libwrap (unsupported in OSX >= 10.8)
         --enable-soundcloud -> --with-yajl
+    EOS
+  end
+
+  plist_options :manual => "mpd"
+
+  def plist; <<-EOS.undent
+    <?xml version="1.0" encoding="UTF-8"?>
+    <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+    <plist version="1.0">
+    <dict>
+        <key>Label</key>
+        <string>#{plist_name}</string>
+        <key>WorkingDirectory</key>
+        <string>#{HOMEBREW_PREFIX}</string>
+        <key>ProgramArguments</key>
+        <array>
+            <string>#{opt_bin}/mpd</string>
+            <string>--no-daemon</string>
+        </array>
+        <key>RunAtLoad</key>
+        <true/>
+        <key>KeepAlive</key>
+        <true/>
+    </dict>
+    </plist>
     EOS
   end
 end
