@@ -2,37 +2,37 @@ require "formula"
 
 class Awscli < Formula
   homepage "https://aws.amazon.com/cli/"
-  url "https://pypi.python.org/packages/source/a/awscli/awscli-1.4.3.tar.gz"
-  sha1 "59d5cb117ba1c6071ce4badc61ba48d41263f182"
+  url "https://pypi.python.org/packages/source/a/awscli/awscli-1.5.4.tar.gz"
+  sha1 "40d4427bd623ce695ed060e9bb3fdb9959375485"
 
   bottle do
     cellar :any
-    sha1 "ef4b22b8f9393a3f24d3c6e1ec8794af65abcc59" => :mavericks
-    sha1 "b5f2317057750fdb098b1e5f2edd72e210818d19" => :mountain_lion
-    sha1 "70dfcb884bfa1436b3ebd8d610d2128666426dba" => :lion
+    sha1 "04bbe41b9a06f71ecd2b07624477233f7ed94861" => :yosemite
+    sha1 "90d4e388ad7d8ffb5008f52ca5d96c96065901d1" => :mavericks
+    sha1 "0e897363015e92bce11d872f0b7d7d7f511cd8e1" => :mountain_lion
   end
 
   head do
-    url "https://github.com/aws/aws-cli.git", :branch => :develop
+    url "https://github.com/aws/aws-cli.git", :branch => "develop"
 
     resource "botocore" do
-      url "https://github.com/boto/botocore.git", :branch => :develop
+      url "https://github.com/boto/botocore.git", :branch => "develop"
     end
 
     resource "bcdoc" do
-      url "https://github.com/boto/bcdoc.git", :branch => :develop
+      url "https://github.com/boto/bcdoc.git", :branch => "develop"
     end
 
     resource "jmespath" do
-      url "https://github.com/boto/jmespath.git", :branch => :develop
+      url "https://github.com/boto/jmespath.git", :branch => "develop"
     end
   end
 
   depends_on :python if MacOS.version <= :snow_leopard
 
   resource "botocore" do
-    url "https://pypi.python.org/packages/source/b/botocore/botocore-0.63.0.tar.gz"
-    sha1 "41ea1bf85acdd95d7af6f1b705cbe5cf2b4aea02"
+    url "https://pypi.python.org/packages/source/b/botocore/botocore-0.68.0.tar.gz"
+    sha1 "5704babdf525e5443d1ef7189a2ed07ae023a0f4"
   end
 
   resource "bcdoc" do
