@@ -18,6 +18,15 @@ Or upgrade a specific formula with:
 
 <a name="cleanup"></a>
 
+### How do I stop certain formulae from being updated?
+To stop something from being updated/upgraded:
+
+    brew pin $FORMULA
+
+To allow that formulae to update again:
+
+    brew unpin $FORMULA
+
 ### How do I uninstall old versions of a formula?
 By default, Homebrew does not uninstall old versions of a formula, so
 over time you will accumulate old versions. To remove them, simply use:
@@ -68,10 +77,10 @@ Which is usually: `/Library/Caches/Homebrew`
 GUI apps on OS X don’t have `/usr/local/bin` in their `PATH` by default.
 If you’re on Mountain Lion, you can fix this by running
 `launchctl setenv PATH "/usr/local/bin:$PATH"`. [More details
-here](http://stackoverflow.com/questions/135688/setting-environment-variables-in-os-x/5444960#5444960),
+here](https://stackoverflow.com/questions/135688/setting-environment-variables-in-os-x/5444960#5444960),
 including how to set this across reboots. If you’re pre-Mountain Lion,
 [here’s an official
-alternative](http://developer.apple.com/library/mac/#qa/qa1067/_index.html).
+alternative](https://developer.apple.com/legacy/library/qa/qa1067/_index.html).
 
 ### How do I contribute to Homebrew?
 Read everything in https://github.com/Homebrew/homebrew/blob/master/CONTRIBUTING.md.
@@ -96,8 +105,8 @@ will use a bottled version of $FORMULA, but
 `brew install $FORMULA —enable-bar` will trigger a source build.
 * The `--build-from-source` option is invoked.
 * The environment variable `HOMEBREW_BUILD_FROM_SOURCE` is set.
-* The machine is not running OS X 10.7+ as all bottled builds are
-generated on Lion or later.
+* The machine is not running OS X 10.8+ as all bottled builds are
+generated on Mountain Lion or later.
 * Homebrew is installed to a prefix other than the standard
 `/usr/local` (although some bottles support this)
 
@@ -116,11 +125,11 @@ We aim to bottle everything.
 
 Or:
 
-`brew install http://raw.github.com/user/repo/branch/formula.rb`
+`brew install https://raw.github.com/user/repo/branch/formula.rb`
 
 Or:
 
-`brew pull http://github.com/Homebrew/homebrew/pulls/1234`
+`brew pull https://github.com/Homebrew/homebrew/pulls/1234`
 
 ### Why does Homebrew insist I install to `/usr/local` with such vehemence?
 <a name="usrlocal"></a>

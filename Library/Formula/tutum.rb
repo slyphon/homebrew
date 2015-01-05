@@ -2,18 +2,20 @@ require "formula"
 
 class Tutum < Formula
   homepage "https://www.tutum.co/"
-  url "https://github.com/tutumcloud/tutum-cli/archive/0.9.8.1.tar.gz"
-  sha1 "5bb72985622f0827edb2433adf4584db26273d94"
+  url "https://github.com/tutumcloud/tutum-cli/archive/v0.11.0.1.tar.gz"
+  sha1 "501b0ec1582b741b2eca81bb5a27b11499b42f0c"
 
   bottle do
     cellar :any
-    sha1 "4f30e05c597ef8b5d2a042462c9f3e363eb717ee" => :yosemite
-    sha1 "d1579461073f847893ea9280cddf63aae14fccab" => :mavericks
-    sha1 "54a28205d4c06e291367394c428db40bdcd0682c" => :mountain_lion
+    sha1 "f6693bd01d54467a0674ff2f8280b4cda04e50d8" => :yosemite
+    sha1 "5c7c3b1902d3d5e8b16394b95e38281634a1e25e" => :mavericks
+    sha1 "cc9c71ee46b8b693a3fcf71749978ff41802aaa6" => :mountain_lion
   end
 
   depends_on :python if MacOS.version <= :snow_leopard
   depends_on "libyaml"
+
+  conflicts_with "fig", :because => "both install `wsdump.py` binaries"
 
   resource "pyyaml" do
     url "https://pypi.python.org/packages/source/P/PyYAML/PyYAML-3.10.tar.gz"
@@ -41,8 +43,8 @@ class Tutum < Formula
   end
 
   resource "python-tutum" do
-    url "https://pypi.python.org/packages/source/p/python-tutum/python-tutum-0.9.8.tar.gz"
-    sha1 "e99c08e6ca7d9b1bb422d1954318e9e17b29fa27"
+    url "https://pypi.python.org/packages/source/p/python-tutum/python-tutum-0.11.0.tar.gz"
+    sha1 "a8b011697fe015c468eeeed33ce242631e11d39a"
   end
 
   resource "six" do
