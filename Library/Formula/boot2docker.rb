@@ -1,16 +1,15 @@
-require "formula"
-
 class Boot2docker < Formula
   homepage "https://github.com/boot2docker/boot2docker-cli"
   # Boot2docker and docker are generally updated at the same time.
   # Please update the version of docker too
-  url "https://github.com/boot2docker/boot2docker-cli.git", :tag => "v1.4.1"
+  url "https://github.com/boot2docker/boot2docker-cli.git", :tag => "v1.6.0",
+    :revision => "9894ae9dbe350c5b96602ed8b9bddb827d9b322b"
   head "https://github.com/boot2docker/boot2docker-cli.git"
 
   bottle do
-    sha1 "9e23c1d530e7ef94fbac0c02eb02fecb943c8f7b" => :yosemite
-    sha1 "72dc462b5bf76c4c69e35aef14e6d4ffa7bbcb6e" => :mavericks
-    sha1 "82da9c5a4f56d4fe5e4fd08d1a2098cb40842bc5" => :mountain_lion
+    sha256 "c2601ede439f44981e76a1e4b015f02741567f13a236f9cca297e51636a201ed" => :yosemite
+    sha256 "b030eecdf642ba8a0f39179eb6da4bc705f3f0f64ee6d4da675844a4216e4466" => :mavericks
+    sha256 "4b60130534c13092d8b603a7171bb42269cdea621023664762544b583658c6be" => :mountain_lion
   end
 
   depends_on "docker" => :recommended
@@ -22,8 +21,6 @@ class Boot2docker < Formula
     cd "src/github.com/boot2docker/boot2docker-cli" do
       ENV["GOPATH"] = buildpath
       system "go", "get", "-d"
-
-      ENV["GIT_DIR"] = cached_download/".git"
       system "make", "goinstall"
     end
 

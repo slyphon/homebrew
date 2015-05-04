@@ -1,10 +1,11 @@
 require "formula"
 
 class RubyBuild < Formula
-  head "https://github.com/sstephenson/ruby-build.git"
   homepage "https://github.com/sstephenson/ruby-build"
-  url "https://github.com/sstephenson/ruby-build/archive/v20141225.tar.gz"
-  sha1 "cb3146672470c53c207d766733e4d21061d034cd"
+  url "https://github.com/sstephenson/ruby-build/archive/v20150502.tar.gz"
+  sha256 "e37e8d4390e34987b3270a161d9cafbd185741f11f9e40035d3ab1ee0bad559d"
+
+  head "https://github.com/sstephenson/ruby-build.git"
 
   depends_on "autoconf" => [:recommended, :run]
   depends_on "pkg-config" => [:recommended, :run]

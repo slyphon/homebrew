@@ -1,13 +1,13 @@
 class Awscli < Formula
   homepage "https://aws.amazon.com/cli/"
-  url "https://pypi.python.org/packages/source/a/awscli/awscli-1.6.5.tar.gz"
-  sha1 "e9d225414c1d782f6951ee82e25a7d44f0f4127b"
+  url "https://pypi.python.org/packages/source/a/awscli/awscli-1.7.25.tar.gz"
+  sha256 "48b46892c1b95b6467335145fd8db2fdab6a6cba14c481dfde4fe5af7114b3b4"
 
   bottle do
     cellar :any
-    sha1 "1ed935e18c781459271b577f8e00957a8efbe4fc" => :yosemite
-    sha1 "d04e21b63766c5aef2cdfbf34bee676f6b7f896b" => :mavericks
-    sha1 "ffacba159d15d262e584b221235b9d5e3e017174" => :mountain_lion
+    sha256 "61c12e8f153e8cffda0b7569fffa9e930e403029f7ae6d3fee38ac3263997d8a" => :yosemite
+    sha256 "756215fed0af623444d2b079f3a5cfc350298c260d143fd3f479e0f19f62c2f4" => :mavericks
+    sha256 "eaa2137eae7bf145579679323f9d850c8cdbebb6b095452353e6aaa7f46ff326" => :mountain_lion
   end
 
   head do
@@ -26,31 +26,33 @@ class Awscli < Formula
     end
   end
 
-  depends_on :python if MacOS.version <= :snow_leopard
+  # Use :python on Lion to avoid urllib3 warning
+  # https://github.com/Homebrew/homebrew/pull/37240
+  depends_on :python if MacOS.version <= :lion
 
   resource "six" do
-    url "https://pypi.python.org/packages/source/s/six/six-1.8.0.tar.gz"
-    sha1 "aa3b0659cbc85c6c7a91efc51f2d1007040070cd"
+    url "https://pypi.python.org/packages/source/s/six/six-1.9.0.tar.gz"
+    sha1 "d168e6d01f0900875c6ecebc97da72d0fda31129"
   end
 
   resource "python-dateutil" do
-    url "https://pypi.python.org/packages/source/p/python-dateutil/python-dateutil-2.2.tar.gz"
-    sha1 "fbafcd19ea0082b3ecb17695b4cb46070181699f"
+    url "https://pypi.python.org/packages/source/p/python-dateutil/python-dateutil-2.4.1.post1.tar.gz"
+    sha256 "aa9bdbd60c395db90204609f1fb5aeb3797870f65c09f04f243476d22f8f4615"
   end
 
   resource "colorama" do
-    url "https://pypi.python.org/packages/source/c/colorama/colorama-0.3.2.tar.gz"
-    sha1 "f2da891543421eeb423c469dff13faf1e70187e5"
+    url "https://pypi.python.org/packages/source/c/colorama/colorama-0.3.3.tar.gz"
+    sha256 "eb21f2ba718fbf357afdfdf6f641ab393901c7ca8d9f37edd0bee4806ffa269c"
   end
 
   resource "jmespath" do
-    url "https://pypi.python.org/packages/source/j/jmespath/jmespath-0.5.0.tar.gz"
-    sha1 "c9ce28e08fd24cdaa23e1183008b67ded302ef27"
+    url "https://pypi.python.org/packages/source/j/jmespath/jmespath-0.7.1.tar.gz"
+    sha1 "10cbbf7f1a892d2c4fce7f7e84bb91e9108fcf45"
   end
 
   resource "botocore" do
-    url "https://pypi.python.org/packages/source/b/botocore/botocore-0.76.0.tar.gz"
-    sha1 "7c4021228bee72880d960e09f88bc893368045e9"
+    url "https://pypi.python.org/packages/source/b/botocore/botocore-0.106.0.tar.gz"
+    sha256 "e0e56faedbd2bf149ebb77a96d74c2fd5a74f91bc265d2750f24d6e1db58a6b0"
   end
 
   resource "docutils" do
@@ -59,8 +61,8 @@ class Awscli < Formula
   end
 
   resource "bcdoc" do
-    url "https://pypi.python.org/packages/source/b/bcdoc/bcdoc-0.12.2.tar.gz"
-    sha1 "31b2a714c2803658d9d028c8edf4623fd0daaf18"
+    url "https://pypi.python.org/packages/source/b/bcdoc/bcdoc-0.14.0.tar.gz"
+    sha256 "68aecc8e14151266316562c6a50605b8efa33f18f8023e303fb20a1b346e53e8"
   end
 
   resource "pyasn1" do
@@ -70,7 +72,7 @@ class Awscli < Formula
 
   resource "rsa" do
     url "https://pypi.python.org/packages/source/r/rsa/rsa-3.1.4.tar.gz"
-    sha1 "208583c49489b7ab415a4455eae7618b7055feca"
+    sha256 "e2b0b05936c276b1edd2e1525553233b666df9e29b5c3ba223eed738277c82a0"
   end
 
   def install

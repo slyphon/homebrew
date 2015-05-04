@@ -1,15 +1,16 @@
 require 'formula'
 
 class PerconaServer < Formula
-  homepage 'http://www.percona.com'
-  url 'http://www.percona.com/redir/downloads/Percona-Server-5.6/LATEST/source/tarball/percona-server-5.6.21-70.1.tar.gz'
-  version '5.6.21-70.1'
-  sha1 '5c4d2b1ebff5b4849dd2c409dc8f81129961a675'
+  homepage 'https://www.percona.com'
+  url 'https://www.percona.com/redir/downloads/Percona-Server-5.6/LATEST/source/tarball/percona-server-5.6.23-72.1.tar.gz'
+  version '5.6.23-72.1'
+  sha256 '5382630b98dd05f72e372ede5535ddcad2e389b594311a69f03a3d95f68d4907'
 
   bottle do
-    sha1 "06c7da21c698a2d8cf538fd6b06763f1d90c3cd8" => :yosemite
-    sha1 "cae0d9106417065618ac5a48625cc9a6c88a9886" => :mavericks
-    sha1 "f1af359ac6d010c57f8ae9a38fe774f8ebb70561" => :mountain_lion
+    revision 1
+    sha256 "09850cc13beeef10af3603e65280249a9747073efc41cc3183d39b3f9aabc675" => :yosemite
+    sha256 "d4b72e8e184b43eb42869469ae51039209bc76b5fec279202b9f05ef6b46ed9f" => :mavericks
+    sha256 "572c89abfeadc41b9871c1aed04f7fd81b6d2844868db53e99ebc606a8e126a1" => :mountain_lion
   end
 
   depends_on 'cmake' => :build
@@ -126,6 +127,7 @@ class PerconaServer < Formula
     bin.install_symlink prefix/"support-files/mysql.server"
 
     # Move mysqlaccess to libexec
+    libexec.mkpath
     mv "#{bin}/mysqlaccess", libexec
     mv "#{bin}/mysqlaccess.conf", libexec
   end

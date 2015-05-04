@@ -53,13 +53,15 @@ Note that these flags should only appear after a command.
   * `cat` <formula>:
     Display the source to <formula>.
 
-  * `cleanup [--force] [-ns]` [<formulae>]:
+  * `cleanup [--force] [--prune=<days>] [-ns]` [<formulae>]:
     For all installed or specific formulae, remove any older versions from the
     cellar. By default, does not remove out-of-date keg-only brews, as other
     software may link directly to specific versions. In addition old downloads from
     the Homebrew download-cache are deleted.
 
     If `--force` is passed, remove out-of-date keg-only brews as well.
+
+    If `--prune=<days>` is specified, remove all cache files older than <days>.
 
     If `-n` is passed, show what would be removed, but do not actually remove anything.
 
@@ -92,7 +94,7 @@ Note that these flags should only appear after a command.
     The options `--set-name` and `--set-version` each take an argument and allow
     you to explicitly set the name and version of the package you are creating.
 
-  * `deps [--1] [-n] [--union] [--tree] [--all] [--installed]` <formulae>:
+  * `deps [--1] [-n] [--union] [--tree] [--all] [--installed] [--skip-build] [--skip-optional]` <formulae>:
     Show dependencies for <formulae>. When given multiple formula arguments,
     show the intersection of dependencies for <formulae>, except when passed
     `--tree`, `--all`, or `--installed`.
@@ -110,6 +112,10 @@ Note that these flags should only appear after a command.
     If `--all` is passed, show dependencies for all formulae.
 
     If `--installed` is passed, show dependencies for all installed formulae.
+
+    By default, `deps` shows dependencies for <formulae>. To skip the `:build`
+    type dependencies, pass `--skip-build`. Similarly, pass `--skip-optional`
+    to skip `:optional` dependencies.
 
   * `diy [--name=<name>] [--version=<version>]`:
     Automatically determine the installation prefix for non-Homebrew software.
@@ -139,7 +145,7 @@ Note that these flags should only appear after a command.
     stable version.
 
     If `-v` is passed, do a verbose VCS checkout, if the url represents a CVS.
-    This useful for seeing if an existing VCS cache has been updated.
+    This is useful for seeing if an existing VCS cache has been updated.
 
     If `--force` is passed, remove a previously cached version and re-fetch.
 
@@ -220,6 +226,11 @@ Note that these flags should only appear after a command.
     If `--git` is passed, Homebrew will create a Git repository, useful for
     creating patches to the software.
 
+  * `irb [--example]`:
+    Enter the interactive Homebrew Ruby shell.
+
+    If `--example` is passed, several examples will be shown.
+
   * `leaves`:
     Show installed formulae that are not dependencies of another installed formula.
 
@@ -237,7 +248,7 @@ Note that these flags should only appear after a command.
 
     If `--force` is passed, Homebrew will allow keg-only formulae to be linked.
 
-  * `linkapps [--local] [<formulae>]`:
+  * `linkapps [--local]` [<formulae>]:
     Find installed formulae that have compiled `.app`-style "application"
     packages for OS X, and symlink those apps into `/Applications`, allowing
     for easier access.
@@ -327,9 +338,12 @@ Note that these flags should only appear after a command.
   * `sh [--env=std]`:
     Instantiate a Homebrew build environment. Uses our years-battle-hardened
     Homebrew build logic to help your `./configure && make && make install`
-    or even your `gem install` succeeed. Especially handy if you run Homebrew
+    or even your `gem install` succeed. Especially handy if you run Homebrew
     in a Xcode-only configuration since it adds tools like make to your PATH
     which otherwise build-systems would not find.
+
+  * `switch` <name> <version>:
+    Symlink all of the specific <version> of <name>'s install to Homebrew prefix.
 
   * `tap` [<tap>]:
     Tap a new formula repository from GitHub, or list existing taps.
@@ -337,9 +351,8 @@ Note that these flags should only appear after a command.
     <tap> is of the form <user>/<repo>, e.g. `brew tap homebrew/dupes`.
 
   * `tap --repair`:
-
-    Ensures all tapped formula are symlinked into Library/Formula and prunes dead
-    formula from Library/Formula.
+    Ensure all tapped formulae are symlinked into Library/Formula and prune dead
+    formulae from Library/Formula.
 
   * `test` [--devel|--HEAD] [--debug] <formula>:
     A few formulae provide a test method. `brew test <formula>` runs this
@@ -360,13 +373,12 @@ Note that these flags should only appear after a command.
     for temporarily disabling a formula:
     `brew unlink foo && commands && brew link foo`.
 
-  * `unlinkapps [--local] [<formulae>]`:
+  * `unlinkapps [--local]` [<formulae>]:
     Removes links created by `brew linkapps`.
 
     If no <formulae> are provided, all linked app will be removed.
 
   * `unpack [--git|--patch] [--destdir=<path>]` <formulae>:
-
     Unpack the source files for <formulae> into subdirectories of the current
     working directory. If `--destdir=<path>` is given, the subdirectories will
     be created in the directory named by `<path>` instead.
@@ -390,15 +402,19 @@ Note that these flags should only appear after a command.
 
     If `--rebase` is specified then `git pull --rebase` is used.
 
-  * `upgrade [install-options]` [<formulae>]:
+  * `upgrade [--all] [install-options]` [<formulae>]:
     Upgrade outdated, unpinned brews.
 
     Options for the `install` command are also valid here.
 
+    If `--all` is passed, upgrade all formulae. This is currently the same
+    behaviour as without `--all` but soon `--all` will be required to upgrade
+    all formulae.
+
     If <formulae> are given, upgrade only the specified brews (but do so even
     if they are pinned; see `pin`, `unpin`).
 
-  * `uses [--installed] [--recursive] [--devel|--HEAD]` <formulae>:
+  * `uses [--installed] [--recursive] [--skip-build] [--skip-optional] [--devel|--HEAD]` <formulae>:
     Show the formulae that specify <formulae> as a dependency. When given
     multiple formula arguments, show the intersection of formulae that use
     <formulae>.
@@ -406,6 +422,10 @@ Note that these flags should only appear after a command.
     Use `--recursive` to resolve more than one level of dependencies.
 
     If `--installed` is passed, only list installed formulae.
+
+    By default, `uses` shows all formulae that specify <formulae> as a dependency.
+    To skip the `:build` type dependencies, pass `--skip-build`. Similarly, pass
+    `--skip-optional` to skip `:optional` dependencies.
 
     By default, `uses` shows usages of `formula` by stable builds. To find
     cases where `formula` is used by development or HEAD build, pass
@@ -559,12 +579,6 @@ can take several different forms:
   * HOMEBREW\_INSTALL\_BADGE:
     Text printed before the installation summary of each successful build.
     Defaults to the beer emoji.
-
-  * HOMEBREW\_SOURCEFORGE\_MIRROR:
-    If set, Homebrew will use the value of `HOMEBREW_SOURCEFORGE_MIRROR` to
-    select a SourceForge mirror for downloading bottles.
-
-    *Example:* `export HOMEBREW_SOURCEFORGE_MIRROR='heanet'`
 
   * HOMEBREW\_SVN:
     When exporting from Subversion, Homebrew will use `HOMEBREW_SVN` if set,

@@ -8,9 +8,9 @@ require 'version'
 class Resource
   include FileUtils
 
-  attr_reader :checksum, :mirrors, :specs, :using
-  attr_writer :url, :checksum, :version
-  attr_accessor :download_strategy
+  attr_reader :mirrors, :specs, :using
+  attr_writer :version
+  attr_accessor :download_strategy, :checksum
 
   # Formula name must be set after the DSL, as we have no access to the
   # formula name before initialization of the formula
@@ -50,7 +50,7 @@ class Resource
   end
 
   def downloader
-    @downloader ||= download_strategy.new(download_name, Download.new(self))
+    download_strategy.new(download_name, Download.new(self))
   end
 
   # Removes /s from resource names; this allows go package names
@@ -122,7 +122,7 @@ class Resource
   rescue ChecksumMissingError
     opoo "Cannot verify integrity of #{fn.basename}"
     puts "A checksum was not provided for this resource"
-    puts "For your reference the SHA1 is: #{fn.sha1}"
+    puts "For your reference the SHA256 is: #{fn.sha256}"
   end
 
   Checksum::TYPES.each do |type|

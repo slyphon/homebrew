@@ -1,17 +1,14 @@
-require "formula"
-
 class Libressl < Formula
   homepage "http://www.libressl.org/"
-  url "http://ftp.openbsd.org/pub/OpenBSD/LibreSSL/libressl-2.1.2.tar.gz"
-  mirror "https://raw.githubusercontent.com/DomT4/LibreMirror/master/LibreSSL/libressl-2.1.2.tar.gz"
-  sha256 "07c05f12e5d49dbfcf82dd23b6b4877b7cdb1c8e4c8dd27cb4d9e5758a6caf52"
-
-  option "without-libtls", "Build without libtls"
+  url "http://ftp.openbsd.org/pub/OpenBSD/LibreSSL/libressl-2.1.6.tar.gz"
+  mirror "https://raw.githubusercontent.com/DomT4/LibreMirror/master/LibreSSL/libressl-2.1.6.tar.gz"
+  sha256 "4f826dd97b3b8001707073bde8401493f9cd4668465b481c042d28e3973653a8"
 
   bottle do
-    sha1 "fca5d55a55ea69eea9bd462d788f9157ba68853b" => :yosemite
-    sha1 "b8ba84dd423acb17976a17437c91ed33d59636f0" => :mavericks
-    sha1 "dd58fa644e7fc23a7883696372174fbfa1451930" => :mountain_lion
+    revision 1
+    sha256 "c8d66d6eef6ec0433642b47a66933ccdeab5f640858bfa6640770956fa357260" => :yosemite
+    sha256 "0dc449d949dbfa99ca15fea5a2a4720c913dac8f0f5dad12a8bca94d47efda87" => :mavericks
+    sha256 "eabe8b82c30101212d56cba70427765834b9bf911fca58a8efb7ecda23bf6029" => :mountain_lion
   end
 
   head do
@@ -33,8 +30,6 @@ class Libressl < Formula
       --with-enginesdir=#{lib}/engines
     ]
 
-    args << "--enable-libtls" if build.with? "libtls"
-
     system "./autogen.sh" if build.head?
     system "./configure", *args
     system "make"
@@ -42,7 +37,7 @@ class Libressl < Formula
     system "make", "install"
 
     # Install the dummy openssl.cnf file to stop runtime warnings.
-    mkdir_p "#{etc}/libressl"
+    mkdir_p "#{etc}/libressl/certs"
     cp "apps/openssl.cnf", "#{etc}/libressl"
   end
 
@@ -59,14 +54,17 @@ class Libressl < Formula
   def caveats; <<-EOS.undent
     A CA file has been bootstrapped using certificates from the system
     keychain. To add additional certificates, place .pem files in
-      #{etc}/libressl
+      #{etc}/libressl/certs
+
+    and run
+      #{opt_bin}/openssl certhash #{etc}/libressl/certs
     EOS
   end
 
   test do
     (testpath/"testfile.txt").write("This is a test file")
     expected_checksum = "91b7b0b1e27bfbf7bc646946f35fa972c47c2d32"
-    system "#{bin}/openssl", "dgst", "-sha1", "-out", "checksum.txt", "testfile.txt"
+    system bin/"openssl", "dgst", "-sha1", "-out", "checksum.txt", "testfile.txt"
     open("checksum.txt") do |f|
       checksum = f.read(100).split("=").last.strip
       assert_equal checksum, expected_checksum

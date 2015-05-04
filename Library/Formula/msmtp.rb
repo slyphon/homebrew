@@ -1,12 +1,12 @@
 class Msmtp < Formula
   homepage "http://msmtp.sourceforge.net"
-  url "https://downloads.sourceforge.net/project/msmtp/msmtp/1.6.0/msmtp-1.6.0.tar.xz"
-  sha1 "39e597619f797ec3550c0146cd3d9e55e85947eb"
+  url "https://downloads.sourceforge.net/project/msmtp/msmtp/1.6.2/msmtp-1.6.2.tar.xz"
+  sha256 "2f6ecd7cbfadf548fd55205bd24cb63b84bcbb1185efed917dd7800595a48789"
 
   bottle do
-    sha1 "fbaed1978a9563b9959f1bff2d6f8c4fe891bdfc" => :yosemite
-    sha1 "922ed1dfb73c3d41f1adfb92d19c283b09b65f0d" => :mavericks
-    sha1 "c417014238a47adbd59eb45810f463163c1eefa2" => :mountain_lion
+    sha256 "a74b5acfc2208061662c9dced09f6704b06f252317250d9d726cb309b85154e9" => :yosemite
+    sha256 "4d31815b2eb044d87a7198bdd1c1188a6644ec37171714b663bd0c037cada714" => :mavericks
+    sha256 "6e0b109c6d290ce71bc24302b0e4fd0a45a1f1b9db025afde8273e87e99777de" => :mountain_lion
   end
 
   depends_on "pkg-config" => :build
@@ -17,7 +17,7 @@ class Msmtp < Formula
       --disable-dependency-tracking
       --with-macosx-keyring
       --prefix=#{prefix}
-      --with-ssl=openssl
+      --with-tls=openssl
     ]
 
     system "./configure", *args

@@ -1,24 +1,24 @@
 class Git < Formula
-  homepage "http://git-scm.com"
-  url "https://www.kernel.org/pub/software/scm/git/git-2.2.1.tar.gz"
-  sha1 "02ae13b144fa5b83733987791cacaa3de855ff0b"
+  homepage "https://git-scm.com"
+  url "https://www.kernel.org/pub/software/scm/git/git-2.4.0.tar.xz"
+  sha256 "b33438dd94659958a74850aacae4a2b3a626baec36d7f29c266130b08045bb24"
 
   head "https://github.com/git/git.git", :shallow => false
 
   bottle do
-    sha1 "997335b0cf3a0cdc2503b99e0ef6ec1386d137df" => :yosemite
-    sha1 "e56fbf898c7358caa6d4a6e415bdc862ab4b2df9" => :mavericks
-    sha1 "0054c2196c415196c165212f8fbc0cc674a7139a" => :mountain_lion
+    sha256 "0ff4ff57cbc021c0c72de88da84f35b16199babd944f343c14cb0e0f29fbb005" => :yosemite
+    sha256 "dcfc32734cc673ea4727f57f987f12dd74d5f8af40b460df2f24b36ec426d292" => :mavericks
+    sha256 "2bb3f70838196670f51e875c3ef2cbbfed779a3f2a62f1aeb9f33d9e233fb082" => :mountain_lion
   end
 
   resource "man" do
-    url "https://www.kernel.org/pub/software/scm/git/git-manpages-2.2.1.tar.gz"
-    sha1 "b914710a4fee2b3d13cdf15fa2f835461c53dd57"
+    url "https://www.kernel.org/pub/software/scm/git/git-manpages-2.4.0.tar.xz"
+    sha256 "b616dc6aa02dcac312e6aeae7af148913f76e1f851ba03ba340b4d2db316ecc7"
   end
 
   resource "html" do
-    url "https://www.kernel.org/pub/software/scm/git/git-htmldocs-2.2.1.tar.gz"
-    sha1 "211cea89850804ec92a3135c53d237a9c69704f0"
+    url "https://www.kernel.org/pub/software/scm/git/git-htmldocs-2.4.0.tar.xz"
+    sha256 "70ee1fdb70507c74832ac021e8940c8249d9b69f2b86aeaf0888ae41772e93a7"
   end
 
   option "with-blk-sha1", "Compile with the block-optimized SHA1 implementation"
@@ -37,7 +37,7 @@ class Git < Formula
   # See https://github.com/Homebrew/homebrew/issues/34554
   if build.with? "brewed-svn"
     depends_on "swig"
-    depends_on "subversion" => "perl"
+    depends_on "subversion" => "with-perl"
   end
 
   def install
@@ -54,11 +54,11 @@ class Git < Formula
     if build.with? "brewed-svn"
       ENV["PERLLIB_EXTRA"] = "#{Formula["subversion"].prefix}/Library/Perl/#{perl_version}/darwin-thread-multi-2level"
     elsif MacOS.version >= :mavericks
-      ENV["PERLLIB_EXTRA"] = %W{
+      ENV["PERLLIB_EXTRA"] = %W[
         #{MacOS.active_developer_dir}
         /Library/Developer/CommandLineTools
         /Applications/Xcode.app/Contents/Developer
-      }.uniq.map { |p|
+      ].uniq.map { |p|
         "#{p}/Library/Perl/#{perl_version}/darwin-thread-multi-2level"
       }.join(":")
     end
@@ -75,8 +75,6 @@ class Git < Formula
     end
 
     ENV["NO_GETTEXT"] = "1" if build.without? "gettext"
-
-    ENV["GIT_DIR"] = cached_download/".git" if build.head?
 
     system "make", "prefix=#{prefix}",
                    "sysconfdir=#{etc}",

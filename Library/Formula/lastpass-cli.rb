@@ -1,26 +1,21 @@
-require "formula"
-
 class LastpassCli < Formula
   homepage "https://github.com/lastpass/lastpass-cli"
-  url "https://github.com/lastpass/lastpass-cli/archive/v0.4.0.tar.gz"
-  sha1 "2c5766be2ad5bca398ed7615ddadde9c5bbf0ecd"
+  url "https://github.com/lastpass/lastpass-cli/archive/v0.5.0.tar.gz"
+  sha256 "09e7b1e5c1520db2a34a49e7ae07e5b3a7555a4ed2490ed7b56f047065bca812"
   head "https://github.com/lastpass/lastpass-cli.git"
 
   bottle do
     cellar :any
-    sha1 "b298283e42b9ee0b59326e57c681c779a22af475" => :yosemite
-    sha1 "62957f48f3d11b631fca83055e233af602f23135" => :mavericks
-    sha1 "d8ee161aa2f672776d15d2e54e36323c3d322e53" => :mountain_lion
+    sha256 "b881d418eb5bd553df3b4743df7487493fee59527f126a76781f9b477af7cc37" => :yosemite
+    sha256 "20c359cbc4c4e4cf79c7d7563539578063c6243788715a2b691aec5796e92709" => :mavericks
+    sha256 "626b8ca141ee1c798029024ccdacfcad78b71baf1c8ec4c615d7ab16e2c64ebc" => :mountain_lion
   end
-
-  depends_on "openssl"
-  depends_on "pinentry" => :optional
 
   option "with-doc", "Install man pages"
 
-  if build.with? "doc"
-    depends_on "asciidoc" => :build
-  end
+  depends_on "asciidoc" => :build if build.with? "doc"
+  depends_on "openssl"
+  depends_on "pinentry" => :optional
 
   def install
     system "make", "PREFIX=#{prefix}", "install"

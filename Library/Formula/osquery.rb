@@ -3,12 +3,11 @@ require "formula"
 class Osquery < Formula
   homepage "http://osquery.io"
   # pull from git tag to get submodules
-  url "https://github.com/facebook/osquery.git", :tag => "1.2.2"
+  url "https://github.com/facebook/osquery.git", :tag => "1.4.4", :revision => "800dc7745e2ee81c645ca3cda7c8ca2f4c535ca4"
 
   bottle do
-    revision 1
-    sha1 "a8142c2f22c3547d343a9eb86e3329ed1e4d464c" => :yosemite
-    sha1 "a45c7c5b005bb11e8ac414eca0af4dcce77cbe53" => :mavericks
+    sha256 "7987f024819b8d44d06772c1d5de2a44a34215669536ed8580f57897caa43506" => :yosemite
+    sha256 "eea6d44f14547ef7ed92c086e1c464039e9c4e47f89c190b4375f38ffa2ff186" => :mavericks
   end
 
   # Build currently fails on Mountain Lion:
@@ -17,13 +16,11 @@ class Osquery < Formula
   depends_on :macos => :mavericks
 
   depends_on "cmake" => :build
-
-  depends_on "boost"
-  depends_on "gflags"
-  depends_on "glog"
+  depends_on "boost" => :build
+  depends_on "gflags" => :build
+  depends_on "rocksdb" => :build
+  depends_on "thrift" => :build
   depends_on "openssl"
-  depends_on "rocksdb"
-  depends_on "thrift"
 
   resource "markupsafe" do
     url "https://pypi.python.org/packages/source/M/MarkupSafe/MarkupSafe-0.23.tar.gz"
@@ -36,12 +33,6 @@ class Osquery < Formula
   end
 
   def install
-    # Apply upstream commit to fix illegal hardware instruction:
-    # https://github.com/facebook/osquery/commit/20259a
-    # https://github.com/facebook/osquery/issues/563
-    # https://github.com/Homebrew/homebrew/issues/35343
-    inreplace "CMakeLists.txt", "-Wl,-all_load", "-Wl,-force_load"
-
     ENV.prepend_create_path "PYTHONPATH", buildpath+"third-party/python/lib/python2.7/site-packages"
 
     resources.each do |r|
@@ -52,9 +43,8 @@ class Osquery < Formula
     end
 
     system "cmake", ".", *std_cmake_args
+    system "make"
     system "make", "install"
-
-    prefix.install "tools/deployment/com.facebook.osqueryd.plist"
   end
 
   plist_options :startup => true, :manual => "osqueryd"
@@ -62,9 +52,9 @@ class Osquery < Formula
   test do
     require 'open3'
     Open3.popen3("#{bin}/osqueryi") do |stdin, stdout, _|
-      stdin.write(".mode line\nSELECT major FROM osx_version;")
+      stdin.write(".mode line\nSELECT count(version) as lines FROM osquery_info;")
       stdin.close
-      assert_equal "major = 10\n", stdout.read
+      assert_equal "lines = 1\n", stdout.read
     end
   end
 end

@@ -3,15 +3,15 @@
 # http://nmav.gnutls.org/2014/10/what-about-poodle.html
 class Gnutls < Formula
   homepage "http://gnutls.org"
-  url "ftp://ftp.gnutls.org/gcrypt/gnutls/v3.3/gnutls-3.3.11.tar.xz"
-  mirror "http://mirrors.dotsrc.org/gcrypt/gnutls/v3.3/gnutls-3.3.11.tar.xz"
-  sha256 "aef28d629b6ba824bd435f9b23506525e657e3746d4aa021296b13cbaaa6ae71"
+  url "ftp://ftp.gnutls.org/gcrypt/gnutls/v3.3/gnutls-3.3.14.tar.xz"
+  mirror "http://mirrors.dotsrc.org/gcrypt/gnutls/v3.3/gnutls-3.3.14.tar.xz"
+  sha256 "0dfa0030faad8909c1e904105198232d6bc0123cae8cf4933b2bac85ee7cec52"
 
   bottle do
     cellar :any
-    sha1 "09178a60426edaa938111aa5dcf10f361a8669c5" => :yosemite
-    sha1 "7174f04eaba8478eb4df571fd618ae9dbd0ddaa8" => :mavericks
-    sha1 "d85219bb39f3d025e92d2124acd05f0865d369ae" => :mountain_lion
+    sha256 "bd9be2fd982757c962f27f155ecdb255a87a5d892b2aa5d026eb114787dfa878" => :yosemite
+    sha256 "df2817f137ca2b2272d9d8af253e0cb02425b597a1f04c42ef11dd833aabf8cd" => :mavericks
+    sha256 "438d7ed97830ad30e7ac2468ad600a44febcf4e7bec116dd514cceb3206e6212" => :mountain_lion
   end
 
   depends_on "pkg-config" => :build
@@ -52,10 +52,17 @@ class Gnutls < Formula
   end
 
   def post_install
-    Formula["openssl"].post_install
+    keychains = %w[
+      /Library/Keychains/System.keychain
+      /System/Library/Keychains/SystemRootCertificates.keychain
+    ]
+
+    openssldir = etc/"openssl"
+    openssldir.mkpath
+    (openssldir/"cert.pem").atomic_write `security find-certificate -a -p #{keychains.join(" ")}`
   end
 
   test do
-    system "#{bin}/gnutls-cli", "--version"
+    system bin/"gnutls-cli", "--version"
   end
 end
