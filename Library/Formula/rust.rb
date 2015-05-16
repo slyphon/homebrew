@@ -1,25 +1,24 @@
 class Rust < Formula
   homepage 'http://www.rust-lang.org/'
-  version "1.0.0-beta.3"
 
   stable do
-    url 'https://static.rust-lang.org/dist/rustc-1.0.0-beta.3-src.tar.gz'
-    sha256 'e751bc8a8ad236c8865697f866b2863e224af56b0194ddf9f3edd71f9ff6545f'
+    url 'https://static.rust-lang.org/dist/rustc-1.0.0-src.tar.gz'
+    sha256 'c304cbd4f7b25d116b73c249f66bdb5c9da8645855ce195a41bda5077b995eba'
 
     resource "cargo" do
-      url "https://github.com/rust-lang/cargo.git", :revision => "83a6d0ed8208d31a1f6dab5e5183ad9eb2d65eaf", :tag => "0.2.0"
+      url "https://github.com/rust-lang/cargo.git", :revision => "a48358155c90467ed9c897930dd0da4614605dac"
     end
 
     # name includes date to satisfy cache
-    resource "cargo-nightly-2015-04-02" do
-      url "https://static-rust-lang-org.s3.amazonaws.com/cargo-dist/2015-04-02/cargo-nightly-x86_64-apple-darwin.tar.gz"
-      sha256 "18647dccb34acb6085a04b0ea1bfb9d150dc9c17f7829932ddf7e62d518df2fe"
+    resource "cargo-nightly-2015-05-14" do
+      url "https://static-rust-lang-org.s3.amazonaws.com/cargo-dist/2015-05-14/cargo-nightly-x86_64-apple-darwin.tar.gz"
+      sha256 "46403af9abb0dd0d9e3c31c20aa2508878ae1e8d0f1e7913addbfc08605b9733"
     end
 
     # name includes date to satisfy cache
-    resource "rustc-nightly-2015-04-04" do
-      url "https://static-rust-lang-org.s3.amazonaws.com/dist/2015-04-04/rustc-nightly-x86_64-apple-darwin.tar.gz"
-      sha256 "87068b325802fee65a388d249b98a184aff7670140133de78560ef375bae70a5"
+    resource "rustc-nightly-2015-05-14" do
+      url "https://static-rust-lang-org.s3.amazonaws.com/dist/2015-05-14/rustc-nightly-x86_64-apple-darwin.tar.gz"
+      sha256 "1f7f447e369190d4d0d3f8c516e6c4d07e458f258f71737422b3f542b6d4da1e"
     end
   end
 
@@ -31,10 +30,9 @@ class Rust < Formula
   end
 
   bottle do
-    revision 1
-    sha256 "ffa02664fa9b91120490e38dc50649139e0d467daffb0a3e91cf9536fbef3b61" => :yosemite
-    sha256 "b6debba43db24f54a722c8cca4c2bb515d31564c5f78ec12dedcf3543dbe19cb" => :mavericks
-    sha256 "5313948a4e21b5dabeb58b4c7ee5998a41878335bd98abfdea84615c2a427646" => :mountain_lion
+    sha256 "a4768e9bf0fb5ddc3860854c9be392e270627208b18fc3f0d5440b0d07338e7e" => :yosemite
+    sha256 "e6a43e8d0870793a12f6981facf6614d51965f48b52b90061f660c31b99bb826" => :mavericks
+    sha256 "dc1c3864cfb62b884857d3c9b20c81bd7e2289098aaa6adc3f87034add9b721b" => :mountain_lion
   end
 
   depends_on "openssl"
@@ -45,7 +43,11 @@ class Rust < Formula
     args = ["--prefix=#{prefix}"]
     args << "--disable-rpath" if build.head?
     args << "--enable-clang" if ENV.compiler == :clang
-    args << "--release-channel=beta" unless build.head?
+    if build.head?
+      args << "--release-channel=nightly"
+    else
+      args << "--release-channel=stable"
+    end
     system "./configure", *args
     system "make"
     system "make install"
@@ -54,11 +56,11 @@ class Rust < Formula
       cargo_stage_path = pwd
 
       if build.stable?
-        resource("rustc-nightly-2015-04-04").stage do
+        resource("rustc-nightly-2015-05-14").stage do
           system "./install.sh", "--prefix=#{cargo_stage_path}/rustc"
         end
 
-        resource("cargo-nightly-2015-04-02").stage do
+        resource("cargo-nightly-2015-05-14").stage do
           system "./install.sh", "--prefix=#{cargo_stage_path}/target/snapshot/cargo"
           # satisfy make target to skip download
           touch "#{cargo_stage_path}/target/snapshot/cargo/bin/cargo"
