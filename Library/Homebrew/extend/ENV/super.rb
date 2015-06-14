@@ -23,7 +23,8 @@ module Superenv
   end
 
   def self.bin
-    (HOMEBREW_REPOSITORY/"Library/ENV").subdirs.reject { |d| d.basename.to_s > MacOS::Xcode.version }.max
+    bin = (HOMEBREW_REPOSITORY/"Library/ENV").subdirs.reject { |d| d.basename.to_s > MacOS::Xcode.version }.max
+    bin.realpath unless bin.nil?
   end
 
   def reset
@@ -244,7 +245,6 @@ module Superenv
   # Removes the MAKEFLAGS environment variable, causing make to use a single job.
   # This is useful for makefiles with race conditions.
   # When passed a block, MAKEFLAGS is removed only for the duration of the block and is restored after its completion.
-  # Returns the value of MAKEFLAGS.
   def deparallelize
     old = delete('MAKEFLAGS')
     if block_given?

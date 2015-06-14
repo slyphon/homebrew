@@ -1,14 +1,15 @@
 class Fpp < Formula
+  desc "CLI program that accepts piped input and presents files for selection"
   homepage "https://facebook.github.io/PathPicker/"
-  url "https://github.com/facebook/PathPicker/releases/download/0.5.7/fpp.0.5.7.tar.gz"
-  sha256 "1293e9510b2d7c1f83320d11cd2f3034545f92daffb6d8de3ee3c8a563972783"
+  url "https://github.com/facebook/PathPicker/releases/download/0.6.1/fpp.0.6.1.tar.gz"
+  sha256 "800a6dcf0cfe55fae9b901b2827f2706ef85812cc4d7d6676dde359c62235428"
   head "https://github.com/facebook/pathpicker.git"
 
   bottle do
     cellar :any
-    sha256 "ae789a874c288492bdf5c7091606a6ceaf19a74a2155995f30da50e61351fa61" => :yosemite
-    sha256 "74664af7de31118b6e68391c0d15f7f69c918e0074e05d940e4c83795f60b9a2" => :mavericks
-    sha256 "91c376617a259b6d359791d4c6176129f9f1d7e5d515812f325ab739efbabc25" => :mountain_lion
+    sha256 "81c66eb233cf29c15a198b5adcc7cfda6b306d9c2d38d37401c50a2494795358" => :yosemite
+    sha256 "7e86a6be38372bec214594ee10cf19eb2afaad9464a4ee23afde33ed5ae5c430" => :mavericks
+    sha256 "eb3e955121c0cab6f567b4b3ba942899be74452be5a56c3f766ea9904bf39d09" => :mountain_lion
   end
 
   depends_on :python if MacOS.version <= :snow_leopard

@@ -1,16 +1,17 @@
 require 'formula'
 
 class Arangodb < Formula
+  desc "Universal open-source database with a flexible data model"
   homepage 'https://www.arangodb.com/'
-  url 'https://www.arangodb.com/repositories/Source/ArangoDB-2.5.3.tar.gz'
-  sha1 '92f9165dab6d23213691104621259a418dc37caf'
+  url 'https://www.arangodb.com/repositories/Source/ArangoDB-2.5.5.tar.gz'
+  sha1 'e8ca48870222f68189881eb09b431cce02bfb7d8'
 
   head "https://github.com/arangodb/arangodb.git", :branch => 'unstable'
 
   bottle do
-    sha256 "cc3183baaa1593ebfe547d9d65d1bc160c64e1af47cc81649cb0d680180033a4" => :yosemite
-    sha256 "ed86246343586d0a1d280f7b85e6120c320e38f82d2c0410bc5643d156512388" => :mavericks
-    sha256 "e59bca53798ff6f9d49a5919cd96cf58ae28624e3c7c8561db19f514f771d547" => :mountain_lion
+    sha256 "e1b8492d5bb327eebd5d046c35889e0ec2d7e01e56965585cf91fa1d065feaee" => :yosemite
+    sha256 "e94bf46aecaf70ea4a114a2974c6d5df6cb5a1fec9a585a56829ec69fc9fb58b" => :mavericks
+    sha256 "de8f83b412fd3edbf5dc3449920ee309bfc171b950cff1b9a9692564a4082e43" => :mountain_lion
   end
 
   depends_on 'go' => :build

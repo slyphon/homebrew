@@ -1,13 +1,14 @@
 class Awscli < Formula
+  desc "Official Amazon AWS command-line interface"
   homepage "https://aws.amazon.com/cli/"
-  url "https://pypi.python.org/packages/source/a/awscli/awscli-1.7.25.tar.gz"
-  sha256 "48b46892c1b95b6467335145fd8db2fdab6a6cba14c481dfde4fe5af7114b3b4"
+  url "https://pypi.python.org/packages/source/a/awscli/awscli-1.7.33.tar.gz"
+  sha256 "e131ddf47fb74657015ac1ffcb34769bf6db9dbe79b88d96e8f91731dab1abe8"
 
   bottle do
     cellar :any
-    sha256 "61c12e8f153e8cffda0b7569fffa9e930e403029f7ae6d3fee38ac3263997d8a" => :yosemite
-    sha256 "756215fed0af623444d2b079f3a5cfc350298c260d143fd3f479e0f19f62c2f4" => :mavericks
-    sha256 "eaa2137eae7bf145579679323f9d850c8cdbebb6b095452353e6aaa7f46ff326" => :mountain_lion
+    sha256 "88e2fb30aa066dc0894332f17324627f0da64e3b788d7861b7cd3f4838f14f33" => :yosemite
+    sha256 "bd937f527418d36e763b08ca9c005388f734367d14c5bccf74251a4f0320f734" => :mavericks
+    sha256 "fbcf2ec3f069bf3a205d47ca8c4a9a25623bfa5e6c28c5c07c032ce99fd7b2b1" => :mountain_lion
   end
 
   head do
@@ -36,8 +37,8 @@ class Awscli < Formula
   end
 
   resource "python-dateutil" do
-    url "https://pypi.python.org/packages/source/p/python-dateutil/python-dateutil-2.4.1.post1.tar.gz"
-    sha256 "aa9bdbd60c395db90204609f1fb5aeb3797870f65c09f04f243476d22f8f4615"
+    url "https://pypi.python.org/packages/source/p/python-dateutil/python-dateutil-2.4.2.tar.gz"
+    sha256 "3e95445c1db500a344079a47b171c45ef18f57d188dffdb0e4165c71bea8eb3d"
   end
 
   resource "colorama" do
@@ -51,8 +52,8 @@ class Awscli < Formula
   end
 
   resource "botocore" do
-    url "https://pypi.python.org/packages/source/b/botocore/botocore-0.106.0.tar.gz"
-    sha256 "e0e56faedbd2bf149ebb77a96d74c2fd5a74f91bc265d2750f24d6e1db58a6b0"
+    url "https://pypi.python.org/packages/source/b/botocore/botocore-1.0.0b2.tar.gz"
+    sha256 "d6bb66a23015ef85ff93150d472f8510dc69ea52681a685664fa0a436fa837c9"
   end
 
   resource "docutils" do
@@ -61,8 +62,8 @@ class Awscli < Formula
   end
 
   resource "bcdoc" do
-    url "https://pypi.python.org/packages/source/b/bcdoc/bcdoc-0.14.0.tar.gz"
-    sha256 "68aecc8e14151266316562c6a50605b8efa33f18f8023e303fb20a1b346e53e8"
+    url "https://pypi.python.org/packages/source/b/bcdoc/bcdoc-0.16.0.tar.gz"
+    sha256 "f568c182e06883becf7196f227052435cffd45604700c82362ca77d3427b6202"
   end
 
   resource "pyasn1" do

@@ -144,7 +144,7 @@ Note that these flags should only appear after a command.
     If `--HEAD` or `--devel` is passed, fetch that version instead of the
     stable version.
 
-    If `-v` is passed, do a verbose VCS checkout, if the url represents a CVS.
+    If `-v` is passed, do a verbose VCS checkout, if the URL represents a CVS.
     This is useful for seeing if an existing VCS cache has been updated.
 
     If `--force` is passed, remove a previously cached version and re-fetch.
@@ -236,7 +236,7 @@ Note that these flags should only appear after a command.
 
   * `ln`, `link [--overwrite] [--dry-run] [--force]` <formula>:
     Symlink all of <formula>'s installed files into the Homebrew prefix. This
-    is done automatically when you install formula, but can be useful for DIY
+    is done automatically when you install formulae but can be useful for DIY
     installations.
 
     If `--overwrite` is passed, Homebrew will delete files which already exist in
@@ -353,8 +353,19 @@ Note that these flags should only appear after a command.
     If `--full` is passed, a full clone will be used.
 
   * `tap --repair`:
-    Ensure all tapped formulae are symlinked into Library/Formula and prune dead
-    formulae from Library/Formula.
+    Migrate tapped formulae from symlink-based to directory-based structure.
+
+  * `tap-info` <tap>:
+    Display information about <tap>.
+
+  * `tap-info --json=<version>` (--installed|<taps>):
+    Print a JSON representation of <taps>. Currently the only accepted value
+    for <version> is `v1`.
+
+    Pass `--installed` to get information on installed taps.
+
+    See the docs for examples of using the JSON:
+    <https://github.com/Homebrew/homebrew/blob/master/share/doc/homebrew/Querying-Brew.md>
 
   * `test` [--devel|--HEAD] [--debug] <formula>:
     A few formulae provide a test method. `brew test <formula>` runs this
@@ -404,14 +415,10 @@ Note that these flags should only appear after a command.
 
     If `--rebase` is specified then `git pull --rebase` is used.
 
-  * `upgrade [--all] [install-options]` [<formulae>]:
+  * `upgrade [install-options]` [<formulae>]:
     Upgrade outdated, unpinned brews.
 
     Options for the `install` command are also valid here.
-
-    If `--all` is passed, upgrade all formulae. This is currently the same
-    behaviour as without `--all` but soon `--all` will be required to upgrade
-    all formulae.
 
     If <formulae> are given, upgrade only the specified brews (but do so even
     if they are pinned; see `pin`, `unpin`).
@@ -440,7 +447,8 @@ Note that these flags should only appear after a command.
     Display the file or directory used to cache <formula>.
 
   * `--cellar`:
-    Display Homebrew's Cellar path. *Default:* `/usr/local/Cellar`
+    Display Homebrew's Cellar path. *Default:* `$(brew --prefix)/Cellar`, or if
+    that directory doesn't exist, `$(brew --repository)/Cellar`.
 
   * `--cellar` <formula>:
     Display the location in the cellar where <formula> would be installed,

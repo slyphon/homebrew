@@ -1,4 +1,5 @@
 class Fontforge < Formula
+  desc "Outline and bitmap font editor/converter for many formats"
   homepage "https://fontforge.github.io"
   url "https://github.com/fontforge/fontforge/archive/20150430.tar.gz"
   sha256 "430c6d02611c7ca948df743e9241994efe37eda25f81a94aeadd9b6dd286ff37"
@@ -11,6 +12,7 @@ class Fontforge < Formula
   end
 
   option "with-giflib", "Build with GIF support"
+  option "with-extra-tools", "Build with additional font tools"
 
   deprecated_option "with-x" => "with-x11"
   deprecated_option "with-gif" => "with-giflib"
@@ -85,6 +87,14 @@ class Fontforge < Formula
     system "./configure", *args
     system "make"
     system "make", "install"
+
+    if build.with? "extra-tools"
+      cd "contrib/fonttools" do
+        system "make"
+        bin.install Dir["*"].select { |f| File.executable? f }
+      end
+    end
+
     # The name is case-sensitive. Don't downcase it when linking.
     ln_s "#{share}/fontforge/osx/FontForge.app", prefix if build.with? "x11"
   end

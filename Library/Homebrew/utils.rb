@@ -85,7 +85,7 @@ end
 def interactive_shell f=nil
   unless f.nil?
     ENV['HOMEBREW_DEBUG_PREFIX'] = f.prefix
-    ENV['HOMEBREW_DEBUG_INSTALL'] = f.name
+    ENV['HOMEBREW_DEBUG_INSTALL'] = f.full_name
   end
 
   Process.wait fork { exec ENV['SHELL'] }
@@ -150,6 +150,15 @@ ensure
   ENV['PATH'] = old_path
 end
 
+def run_as_not_developer(&block)
+  begin
+    old = ENV.delete "HOMEBREW_DEVELOPER"
+    yield
+  ensure
+    ENV["HOMEBREW_DEVELOPER"] = old
+  end
+end
+
 # Kernel.system but with exceptions
 def safe_system cmd, *args
   Homebrew.system(cmd, *args) or raise ErrorDuringExecution.new(cmd, args)
@@ -166,15 +175,18 @@ def quiet_system cmd, *args
 end
 
 def curl *args
-  curl = Pathname.new '/usr/bin/curl'
+  brewed_curl = HOMEBREW_PREFIX/"opt/curl/bin/curl"
+  curl = if MacOS.version <= "10.6" && brewed_curl.exist?
+    brewed_curl
+  else
+    Pathname.new '/usr/bin/curl'
+  end
   raise "#{curl} is not executable" unless curl.exist? and curl.executable?
 
   flags = HOMEBREW_CURL_ARGS
   flags = flags.delete("#") if ARGV.verbose?
 
   args = [flags, HOMEBREW_USER_AGENT, *args]
-  # See https://github.com/Homebrew/homebrew/issues/6103
-  args << "--insecure" if MacOS.version < "10.6"
   args << "--verbose" if ENV['HOMEBREW_CURL_VERBOSE']
   args << "--silent" unless $stdout.tty?
 
