@@ -1,20 +1,20 @@
 class Harfbuzz < Formula
   desc "OpenType text shaping engine"
   homepage "https://wiki.freedesktop.org/www/Software/HarfBuzz/"
-  url "http://www.freedesktop.org/software/harfbuzz/release/harfbuzz-0.9.40.tar.bz2"
-  sha256 "1771d53583be6d91ca961854b2a24fb239ef0545eed221ae3349abae0ab8321f"
+  url "http://www.freedesktop.org/software/harfbuzz/release/harfbuzz-1.0.1.tar.bz2"
+  sha256 "32a1a7ad584a2f2cfba5c1d234d046c0521e86e7a21d403e15e89aa509ef0ea8"
 
   bottle do
-    revision 1
-    sha256 "e7a4f53b09310e122594f4036f41f13a80ff595372e3bfb09aaf2e3ad0ccbc0b" => :yosemite
-    sha256 "0c0487f536b489f9594b7b416ff353a328e0bd9b872a14769154d9ce84cd243e" => :mavericks
-    sha256 "2943b908ad3d5a9e431f2eb58a3b09270ae1d12713f8da1156d9dfc542edf13d" => :mountain_lion
+    sha256 "89ef0eac9a10ee07293bc769663c55368eef6af6e0cd4faa9798b72bd5dd336d" => :yosemite
+    sha256 "9bf6b6d48271957398aa2db68ec0df65e55fc488ce55c64ad811c68595ba53ca" => :mavericks
+    sha256 "42a8ee7134fe0bd07b0c2aad7bde033e7be721dee43970a414764868f6754a15" => :mountain_lion
   end
 
   depends_on "pkg-config" => :build
   depends_on "glib"
   depends_on "cairo"
   depends_on "icu4c" => :recommended
+  depends_on "graphite2" => :optional
   depends_on "freetype"
   depends_on "gobject-introspection"
 
@@ -32,6 +32,7 @@ class Harfbuzz < Formula
     ]
 
     args << "--with-icu" if build.with? "icu4c"
+    args << "--with-graphite2" if build.with? "graphite2"
     system "./configure", *args
     system "make", "install"
   end

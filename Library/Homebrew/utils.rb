@@ -55,7 +55,7 @@ def oh1 title
 end
 
 def opoo warning
-  $stderr.puts "#{Tty.red}Warning#{Tty.reset}: #{warning}"
+  $stderr.puts "#{Tty.yellow}Warning#{Tty.reset}: #{warning}"
 end
 
 def onoe error
@@ -86,6 +86,10 @@ def interactive_shell f=nil
   unless f.nil?
     ENV['HOMEBREW_DEBUG_PREFIX'] = f.prefix
     ENV['HOMEBREW_DEBUG_INSTALL'] = f.full_name
+  end
+
+  if ENV["SHELL"].include?("zsh") && ENV["HOME"].start_with?(HOMEBREW_TEMP.resolved_path.to_s)
+    FileUtils.touch "#{ENV["HOME"]}/.zshrc"
   end
 
   Process.wait fork { exec ENV['SHELL'] }
@@ -329,7 +333,7 @@ module GitHub extend self
         GitHub #{error}
         Try again in #{pretty_ratelimit_reset(reset)}, or create an personal access token:
           https://github.com/settings/tokens
-        and then set it as HOMEBREW_GITHUB_API_TOKEN.
+        and then set the token as: HOMEBREW_GITHUB_API_TOKEN
         EOS
     end
 
@@ -399,6 +403,10 @@ module GitHub extend self
     open(uri) { |json| json["items"] }
   end
 
+  def repository(user, repo)
+    open(URI.parse("https://api.github.com/repos/#{user}/#{repo}")) { |j| j }
+  end
+
   def build_query_string(query, qualifiers)
     s = "q=#{uri_escape(query)}+"
     s << build_search_qualifier_string(qualifiers)
@@ -429,7 +437,7 @@ module GitHub extend self
 
   def print_pull_requests_matching(query)
     return [] if ENV['HOMEBREW_NO_GITHUB_API']
-    puts "Searching pull requests..."
+    ohai "Searching pull requests..."
 
     open_or_closed_prs = issues_matching(query, :type => "pr")
 

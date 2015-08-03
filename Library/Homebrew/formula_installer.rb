@@ -64,8 +64,8 @@ class FormulaInstaller
     return true  if force_bottle? && bottle
     return false if build_from_source? || build_bottle? || interactive?
     return false unless options.empty?
-
-    return true if formula.local_bottle_path
+    return true  if formula.local_bottle_path
+    return false if formula.file_modified?
     return false unless bottle && formula.pour_bottle?
 
     unless bottle.compatible_cellar?
@@ -180,6 +180,12 @@ class FormulaInstaller
     build_bottle_preinstall if build_bottle?
 
     unless @poured_bottle
+      if formula.file_modified? && !build_from_source?
+        filename = formula.path.to_s.gsub("#{HOMEBREW_PREFIX}/", "")
+        opoo "Formula file is modified!"
+        puts "Building from source because #{filename} has local changes"
+        puts "To install from a bottle instead, run with --force-bottle"
+      end
       compute_and_install_dependencies if @pour_failed and not ignore_deps?
       build
       clean
@@ -392,7 +398,7 @@ class FormulaInstaller
 
     keg = Keg.new(formula.prefix)
     link(keg)
-    fix_install_names(keg) if OS.mac?
+    fix_install_names(keg)
 
     if build_bottle? && formula.post_install_defined?
       ohai "Not running post_install as we're building a bottle"
@@ -404,7 +410,7 @@ class FormulaInstaller
     ohai "Summary" if verbose? or show_summary_heading?
     puts summary
   ensure
-    unlock if hold_locks?
+    unlock
   end
 
   def emoji
@@ -480,8 +486,16 @@ class FormulaInstaller
       #{formula.path}
     ].concat(build_argv)
 
+    if Sandbox.available? && ARGV.sandbox?
+      if Sandbox.auto_disable?
+        Sandbox.print_autodisable_warning
+      else
+        Sandbox.print_sandbox_message
+      end
+    end
+
     Utils.safe_fork do
-      if Sandbox.available? && ARGV.sandbox?
+      if Sandbox.available? && ARGV.sandbox? && !Sandbox.auto_disable?
         sandbox = Sandbox.new
         formula.logs.mkpath
         sandbox.record_log(formula.logs/"sandbox.build.log")
@@ -570,11 +584,6 @@ class FormulaInstaller
 
   def fix_install_names(keg)
     keg.fix_install_names(:keg_only => formula.keg_only?)
-
-    if @poured_bottle
-      keg.relocate_install_names Keg::PREFIX_PLACEHOLDER, HOMEBREW_PREFIX.to_s,
-        Keg::CELLAR_PLACEHOLDER, HOMEBREW_CELLAR.to_s, :keg_only => formula.keg_only?
-    end
   rescue Exception => e
     onoe "Failed to fix install names"
     puts "The formula built, but you may encounter issues using it or linking other"
@@ -610,8 +619,8 @@ class FormulaInstaller
       return if Homebrew::Hooks::Bottles.pour_formula_bottle(formula)
     end
 
-    if formula.local_bottle_path
-      downloader = LocalBottleDownloadStrategy.new(formula)
+    if (bottle_path = formula.local_bottle_path)
+      downloader = LocalBottleDownloadStrategy.new(bottle_path)
     else
       downloader = formula.bottle
       downloader.verify_download_integrity(downloader.fetch)
@@ -620,18 +629,23 @@ class FormulaInstaller
       downloader.stage
     end
 
+    keg = Keg.new(formula.prefix)
+    keg.relocate_install_names Keg::PREFIX_PLACEHOLDER, HOMEBREW_PREFIX.to_s,
+      Keg::CELLAR_PLACEHOLDER, HOMEBREW_CELLAR.to_s, :keg_only => formula.keg_only?
+
     Pathname.glob("#{formula.bottle_prefix}/{etc,var}/**/*") do |path|
       path.extend(InstallRenamed)
       path.cp_path_sub(formula.bottle_prefix, HOMEBREW_PREFIX)
     end
     FileUtils.rm_rf formula.bottle_prefix
 
+    tab = Tab.for_keg(formula.prefix)
+
     CxxStdlib.check_compatibility(
       formula, formula.recursive_dependencies,
-      Keg.new(formula.prefix), MacOS.default_compiler
+      Keg.new(formula.prefix), tab.compiler
     )
 
-    tab = Tab.for_keg(formula.prefix)
     tab.tap = formula.tap
     tab.poured_from_bottle = true
     tab.write
@@ -674,27 +688,5 @@ class FormulaInstaller
       @@locked.clear
       @hold_locks = false
     end
-  end
-end
-
-
-class Formula
-  def keg_only_text
-    s = "This formula is keg-only, which means it was not symlinked into #{HOMEBREW_PREFIX}."
-    s << "\n\n#{keg_only_reason.to_s}"
-    if lib.directory? or include.directory?
-      s <<
-        <<-EOS.undent_________________________________________________________72
-
-
-        Generally there are no consequences of this for you. If you build your
-        own software and it requires this formula, you'll need to add to your
-        build variables:
-
-        EOS
-      s << "    LDFLAGS:  -L#{opt_lib}\n" if lib.directory?
-      s << "    CPPFLAGS: -I#{opt_include}\n" if include.directory?
-    end
-    s << "\n"
   end
 end

@@ -48,7 +48,7 @@ def bottle_resolve_formula_names bottle_file
   name = receipt_file_path.split("/").first
   tap = Tab.from_file_content(receipt_file, "#{bottle_file}/#{receipt_file_path}").tap
 
-  if tap.nil? || tap == "Homebrew/homebrew" || tap == "mxcl/master"
+  if tap.nil? || tap == "Homebrew/homebrew"
     full_name = name
   else
     full_name = "#{tap.sub("homebrew-", "")}/#{name}"
@@ -58,7 +58,7 @@ def bottle_resolve_formula_names bottle_file
 end
 
 def bottle_resolve_version bottle_file
-  Version.new bottle_receipt_path(bottle_file).split("/")[1]
+  PkgVersion.parse bottle_receipt_path(bottle_file).split("/")[1]
 end
 
 class Bintray
@@ -67,7 +67,7 @@ class Bintray
   end
 
   def self.repository(tap=nil)
-    return "bottles" if tap.to_s.empty?
+    return "bottles" if tap.nil? || tap == "Homebrew/homebrew"
     "bottles-#{tap.sub(/^homebrew\/(homebrew-)?/i, "")}"
   end
 end

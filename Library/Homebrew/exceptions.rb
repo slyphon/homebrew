@@ -51,17 +51,19 @@ class FormulaUnavailableError < RuntimeError
 end
 
 class TapFormulaUnavailableError < FormulaUnavailableError
-  attr_reader :user, :repo, :shortname
+  attr_reader :tap, :user, :repo
 
-  def initialize name
-    super
-    @user, @repo, @shortname = name.split("/", 3)
+  def initialize tap, name
+    @tap = tap
+    @user = tap.user
+    @repo = tap.repo
+    super "#{tap}/#{name}"
   end
 
-  def to_s; <<-EOS.undent
-      No available formula for #{shortname} #{dependent_s}
-      Please tap it and then try again: brew tap #{user}/#{repo}
-    EOS
+  def to_s
+    s = super
+    s += "\nPlease tap it and then try again: brew tap #{tap}" unless tap.installed?
+    s
   end
 end
 
@@ -80,6 +82,18 @@ class TapFormulaAmbiguityError < RuntimeError
       Formulae found in multiple taps: #{formulae.map { |f| "\n       * #{f}" }.join}
 
       Please use the fully-qualified name e.g. #{formulae.first} to refer the formula.
+    EOS
+  end
+end
+
+class TapUnavailableError < RuntimeError
+  attr_reader :name
+
+  def initialize name
+    @name = name
+
+    super <<-EOS.undent
+      No available tap #{name}.
     EOS
   end
 end
@@ -109,7 +123,7 @@ class UnsatisfiedRequirements < RuntimeError
     if reqs.length == 1
       super "An unsatisfied requirement failed this build."
     else
-      super "Unsatisified requirements failed this build."
+      super "Unsatisfied requirements failed this build."
     end
   end
 end
@@ -202,7 +216,12 @@ class BuildError < RuntimeError
     puts
     unless RUBY_VERSION < "1.8.7" || issues.empty?
       puts "These open issues may also help:"
-      puts issues.map{ |i| "#{i['title']} (#{i['html_url']})" }.join("\n")
+      puts issues.map{ |i| "#{i['title']} #{i['html_url']}" }.join("\n")
+    end
+
+    if MacOS.version >= "10.11"
+      require "cmd/doctor"
+      opoo Checks.new.check_for_unsupported_osx
     end
   end
 end
@@ -280,5 +299,15 @@ end
 class DuplicateResourceError < ArgumentError
   def initialize(resource)
     super "Resource #{resource.inspect} is defined more than once"
+  end
+end
+
+class BottleVersionMismatchError < RuntimeError
+  def initialize bottle_file, bottle_version, formula, formula_version
+    super <<-EOS.undent
+      Bottle version mismatch
+      Bottle: #{bottle_file} (#{bottle_version})
+      Formula: #{formula.full_name} (#{formula_version})
+    EOS
   end
 end

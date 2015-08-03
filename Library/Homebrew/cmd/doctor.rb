@@ -125,6 +125,9 @@ def check_for_stray_dylibs
     "libosxfuse_i32.2.dylib", # OSXFuse
     "libosxfuse_i64.2.dylib", # OSXFuse
     "libTrAPI.dylib", # TrAPI / Endpoint Security VPN
+    "libntfs-3g.*.dylib", # NTFS-3G
+    "libntfs.*.dylib", # NTFS-3G
+    "libublio.*.dylib", # NTFS-3G
   ]
 
   __check_stray_files "/usr/local/lib", "*.dylib", white_list, <<-EOS.undent
@@ -142,6 +145,9 @@ def check_for_stray_static_libs
   white_list = [
     "libsecurity_agent_client.a", # OS X 10.8.2 Supplemental Update
     "libsecurity_agent_server.a", # OS X 10.8.2 Supplemental Update
+    "libntfs-3g.a", # NTFS-3G
+    "libntfs.a", # NTFS-3G
+    "libublio.a", # NTFS-3G
   ]
 
   __check_stray_files "/usr/local/lib", "*.a", white_list, <<-EOS.undent
@@ -160,6 +166,8 @@ def check_for_stray_pcs
     "fuse.pc", # OSXFuse/MacFuse
     "macfuse.pc", # OSXFuse MacFuse compatibility layer
     "osxfuse.pc", # OSXFuse
+    "libntfs-3g.pc", # NTFS-3G
+    "libublio.pc",# NTFS-3G
   ]
 
   __check_stray_files "/usr/local/lib/pkgconfig", "*.pc", white_list, <<-EOS.undent
@@ -177,6 +185,9 @@ def check_for_stray_las
     "libfuse_ino64.la", # MacFuse
     "libosxfuse_i32.la", # OSXFuse
     "libosxfuse_i64.la", # OSXFuse
+    "libntfs-3g.la", # NTFS-3G
+    "libntfs.la", # NTFS-3G
+    "libublio.la", # NTFS-3G
   ]
 
   __check_stray_files "/usr/local/lib", "*.la", white_list, <<-EOS.undent
@@ -194,6 +205,8 @@ def check_for_stray_headers
     "fuse/**/*.h", # MacFuse
     "macfuse/**/*.h", # OSXFuse MacFuse compatibility layer
     "osxfuse/**/*.h", # OSXFuse
+    "ntfs/**/*.h", # NTFS-3G
+    "ntfs-3g/**/*.h", # NTFS-3G
   ]
 
   __check_stray_files "/usr/local/include", "**/*.h", white_list, <<-EOS.undent
@@ -237,6 +250,15 @@ def check_for_broken_symlinks
   end
 end
 
+def check_for_unsupported_osx
+  if MacOS.version >= "10.11" then <<-EOS.undent
+    You are using OS X #{MacOS.version}.
+    We do not provide support for this pre-release version.
+    You may encounter build failures or other breakage.
+    EOS
+  end
+end
+
 if MacOS.version >= "10.9"
   def check_for_installed_developer_tools
     unless MacOS::Xcode.installed? || MacOS::CLT.installed? then <<-EOS.undent
@@ -247,13 +269,27 @@ if MacOS.version >= "10.9"
     end
   end
 
-  def check_xcode_up_to_date
-    if MacOS::Xcode.installed? && MacOS::Xcode.outdated?
-      <<-EOS.undent
-      Your Xcode (#{MacOS::Xcode.version}) is outdated
-      Please update to Xcode #{MacOS::Xcode.latest_version}.
-      Xcode can be updated from the App Store.
-      EOS
+  # TODO: remove when 10.11 is released
+  if MacOS.version >= "10.11"
+    def check_xcode_up_to_date
+      if MacOS::Xcode.installed? && MacOS::Xcode.outdated?
+        <<-EOS.undent
+        Your Xcode (#{MacOS::Xcode.version}) is outdated
+        Please update to Xcode #{MacOS::Xcode.latest_version}.
+        Xcode can be updated from
+          https://developer.apple.com/xcode/downloads/
+        EOS
+      end
+    end
+  else
+    def check_xcode_up_to_date
+      if MacOS::Xcode.installed? && MacOS::Xcode.outdated?
+        <<-EOS.undent
+        Your Xcode (#{MacOS::Xcode.version}) is outdated
+        Please update to Xcode #{MacOS::Xcode.latest_version}.
+        Xcode can be updated from the App Store.
+        EOS
+      end
     end
   end
 
@@ -281,7 +317,7 @@ elsif MacOS.version == "10.8" || MacOS.version == "10.7"
       Your Xcode (#{MacOS::Xcode.version}) is outdated
       Please update to Xcode #{MacOS::Xcode.latest_version}.
       Xcode can be updated from
-        https://developer.apple.com/downloads
+        https://developer.apple.com/xcode/downloads/
       EOS
     end
   end
@@ -300,7 +336,7 @@ else
     unless MacOS::Xcode.installed? then <<-EOS.undent
       Xcode is not installed. Most formulae need Xcode to build.
       It can be installed from
-        https://developer.apple.com/downloads
+        https://developer.apple.com/xcode/downloads/
       EOS
     end
   end
@@ -310,7 +346,7 @@ else
       Your Xcode (#{MacOS::Xcode.version}) is outdated
       Please update to Xcode #{MacOS::Xcode.latest_version}.
       Xcode can be updated from
-        https://developer.apple.com/downloads
+        https://developer.apple.com/xcode/downloads/
       EOS
     end
   end
@@ -787,7 +823,7 @@ def check_for_multiple_volumes
   # Find the volumes for the TMP folder & HOMEBREW_CELLAR
   real_cellar = HOMEBREW_CELLAR.realpath
 
-  tmp = Pathname.new with_system_path { `mktemp -d #{HOMEBREW_TEMP}/homebrew-brew-doctor-XXXXXX` }.strip
+  tmp = Pathname.new(Dir.mktmpdir("doctor", HOMEBREW_TEMP))
   real_temp = tmp.realpath.parent
 
   where_cellar = volumes.which real_cellar
@@ -913,12 +949,12 @@ def check_for_autoconf
 end
 
 def __check_linked_brew f
-  prefix = f.prefix
-
-  prefix.find do |src|
-    next if src == prefix
-    dst = HOMEBREW_PREFIX + src.relative_path_from(prefix)
-    return true if dst.symlink? && src == dst.resolved_path
+  f.rack.subdirs.each do |prefix|
+    prefix.find do |src|
+      next if src == prefix
+      dst = HOMEBREW_PREFIX + src.relative_path_from(prefix)
+      return true if dst.symlink? && src == dst.resolved_path
+    end
   end
 
   false
@@ -927,8 +963,8 @@ end
 def check_for_linked_keg_only_brews
   return unless HOMEBREW_CELLAR.exist?
 
-  linked = Formula.select { |f|
-    f.keg_only? && f.installed? && __check_linked_brew(f)
+  linked = Formula.installed.select { |f|
+    f.keg_only? && __check_linked_brew(f)
   }
 
   unless linked.empty?

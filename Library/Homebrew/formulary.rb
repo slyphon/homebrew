@@ -90,6 +90,11 @@ class Formulary
     def get_formula(spec)
       formula = super
       formula.local_bottle_path = @bottle_filename
+      formula_version = formula.pkg_version
+      bottle_version =  bottle_resolve_version(@bottle_filename)
+      unless formula_version == bottle_version
+        raise BottleVersionMismatchError.new(@bottle_filename, bottle_version, formula, formula_version)
+      end
       formula
     end
   end
@@ -131,14 +136,13 @@ class Formulary
 
   # Loads tapped formulae.
   class TapLoader < FormulaLoader
-    attr_reader :tapped_name
+    attr_reader :tap
 
     def initialize tapped_name
-      @tapped_name = tapped_name
       user, repo, name = tapped_name.split("/", 3).map(&:downcase)
-      tap = Tap.new user, repo
-      path = tap.formula_files.detect { |file| file.basename(".rb").to_s == name }
-      path ||= tap.path/"#{name}.rb"
+      @tap = Tap.new user, repo.sub(/^homebrew-/, "")
+      path = @tap.formula_files.detect { |file| file.basename(".rb").to_s == name }
+      path ||= @tap.path/"#{name}.rb"
 
       super name, path
     end
@@ -146,7 +150,7 @@ class Formulary
     def get_formula(spec)
       super
     rescue FormulaUnavailableError => e
-      raise TapFormulaUnavailableError, tapped_name, e.backtrace
+      raise TapFormulaUnavailableError.new(tap, name), "", e.backtrace
     end
   end
 
@@ -171,15 +175,18 @@ class Formulary
   end
 
   # Return a Formula instance for the given rack.
-  def self.from_rack(rack, spec=:stable)
+  # It will auto resolve formula's spec when requested spec is nil
+  def self.from_rack(rack, spec=nil)
     kegs = rack.directory? ? rack.subdirs.map { |d| Keg.new(d) } : []
 
     keg = kegs.detect(&:linked?) || kegs.detect(&:optlinked?) || kegs.max_by(&:version)
-    return factory(rack.basename.to_s, spec) unless keg
+    return factory(rack.basename.to_s, spec || :stable) unless keg
 
-    tap = Tab.for_keg(keg).tap
+    tab = Tab.for_keg(keg)
+    tap = tab.tap
+    spec ||= tab.spec
 
-    if tap.nil? || tap == "Homebrew/homebrew" || tap == "mxcl/master"
+    if tap.nil? || tap == "Homebrew/homebrew"
       factory(rack.basename.to_s, spec)
     else
       factory("#{tap.sub("homebrew-", "")}/#{rack.basename}", spec)

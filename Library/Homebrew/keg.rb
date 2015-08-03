@@ -1,5 +1,5 @@
 require "extend/pathname"
-require "keg_fix_install_names"
+require "keg_relocate"
 require "formula_lock"
 require "ostruct"
 
@@ -243,6 +243,10 @@ class Keg
     Dir["#{path}/{,libexec/}*.app"].any?
   end
 
+  def elisp_installed?
+    Dir["#{path}/share/emacs/site-lisp/**/*.el"].any?
+  end
+
   def version
     require 'pkg_version'
     PkgVersion.parse(path.basename.to_s)
@@ -274,6 +278,7 @@ class Keg
       # all icons subfolders should also mkpath
       when /^icons\// then :mkpath
       when /^zsh/ then :mkpath
+      when /^fish/ then :mkpath
       else :link
       end
     end
