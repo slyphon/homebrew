@@ -1,5 +1,3 @@
-require "formula"
-
 class Unbound < Formula
   desc "Validating, recursive, caching DNS resolver"
   homepage "https://www.unbound.net"
@@ -22,6 +20,10 @@ class Unbound < Formula
                           "--with-libevent=#{Formula["libevent"].opt_prefix}",
                           "--with-ssl=#{Formula["openssl"].opt_prefix}"
     system "make", "install"
+  end
+
+  def post_install
+    inreplace etc/"unbound/unbound.conf", 'username: "unbound"', "username: \"#{ENV["USER"]}\""
   end
 
   plist_options :startup => true
@@ -53,5 +55,9 @@ class Unbound < Formula
       </dict>
     </plist>
     EOS
+  end
+
+  test do
+    system sbin/"unbound-control-setup", "-d", testpath
   end
 end

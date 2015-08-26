@@ -39,11 +39,11 @@ class Sandbox
     @profile.add_rule(rule)
   end
 
-  def allow_write(path, options={})
+  def allow_write(path, options = {})
     add_rule :allow => true, :operation => "file-write*", :filter => path_filter(path, options[:type])
   end
 
-  def deny_write(path, options={})
+  def deny_write(path, options = {})
     add_rule :allow => false, :operation => "file-write*", :filter => path_filter(path, options[:type])
   end
 
@@ -57,6 +57,7 @@ class Sandbox
 
   def allow_write_temp_and_cache
     allow_write_path "/private/tmp"
+    allow_write_path "/private/var/tmp"
     allow_write "^/private/var/folders/[^/]+/[^/]+/[C,T]/", :type => :regex
     allow_write_path HOMEBREW_TEMP
     allow_write_path HOMEBREW_CACHE
@@ -66,6 +67,11 @@ class Sandbox
     allow_write_path formula.rack
     allow_write_path formula.etc
     allow_write_path formula.var
+  end
+
+  # Xcode projects expect access to certain cache/archive dirs.
+  def allow_write_xcode
+    allow_write_path "/Users/#{ENV["USER"]}/Library/Developer/Xcode/DerivedData/"
   end
 
   def allow_write_log(formula)
@@ -79,32 +85,30 @@ class Sandbox
   end
 
   def exec(*args)
-    begin
-      seatbelt = Tempfile.new(["homebrew", ".sb"], HOMEBREW_TEMP)
-      seatbelt.write(@profile.dump)
-      seatbelt.close
-      @start = Time.now
-      safe_system SANDBOX_EXEC, "-f", seatbelt.path, *args
-    rescue
-      if ARGV.verbose?
-        ohai "Sandbox profile:"
-        puts @profile.dump
-      end
-      raise
-    ensure
-      seatbelt.unlink
-      unless @log.nil?
-        sleep 0.1 # wait for a bit to let syslog catch up the latest events.
-        syslog_args = %W[
-          -F '$((Time)(local))\ $(Sender)[$(PID)]:\ $Message'
-          -k Time ge #{@start.to_i.to_s}
-          -k Sender kernel
-          -o
-          -k Time ge #{@start.to_i.to_s}
-          -k Sender sandboxd
-        ]
-        quiet_system "syslog #{syslog_args * " "} | grep deny > #{@log}"
-      end
+    seatbelt = Tempfile.new(["homebrew", ".sb"], HOMEBREW_TEMP)
+    seatbelt.write(@profile.dump)
+    seatbelt.close
+    @start = Time.now
+    safe_system SANDBOX_EXEC, "-f", seatbelt.path, *args
+  rescue
+    if ARGV.verbose?
+      ohai "Sandbox profile:"
+      puts @profile.dump
+    end
+    raise
+  ensure
+    seatbelt.unlink
+    unless @log.nil?
+      sleep 0.1 # wait for a bit to let syslog catch up the latest events.
+      syslog_args = %W[
+        -F '$((Time)(local))\ $(Sender)[$(PID)]:\ $Message'
+        -k Time ge #{@start.to_i}
+        -k Sender kernel
+        -o
+        -k Time ge #{@start.to_i}
+        -k Sender sandboxd
+      ]
+      quiet_system "syslog #{syslog_args * " "} | grep deny > #{@log}"
     end
   end
 

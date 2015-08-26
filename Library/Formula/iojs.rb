@@ -1,13 +1,13 @@
 class Iojs < Formula
   desc "npm-compatible platform based on Node.js"
   homepage "https://iojs.org/"
-  url "https://iojs.org/dist/v2.5.0/iojs-v2.5.0.tar.xz"
-  sha256 "0ad1bca083cbdf9a67fc55e1b1d47d8cc3bc6473e4a3af083c9f67ace3e7e75e"
+  url "https://iojs.org/dist/v3.1.0/iojs-v3.1.0.tar.xz"
+  sha256 "8d0e11833dd86517868ac95ea87732c0f9614bc3c10150abf1d133ce378dfe48"
 
   bottle do
-    sha256 "9b1e8906ae4c9ed18c6764e79a1be9bc6ca90ef3947f82dbb2409c3953731fc7" => :yosemite
-    sha256 "9a6ca219d8ef57375c58684a93ad436c5c189fbe129f8375421d3c6c32743138" => :mavericks
-    sha256 "40115d9e139eb8a6b193ecbab9c2cf042b91381d4f6a4f6fbabde793691ae137" => :mountain_lion
+    sha256 "c18ede09560539014d6ea794c01ba9f1e4fc057f06f4040a90c7d6b95283f7cd" => :yosemite
+    sha256 "1805b8b51362715bcb20a14f45570bbe660a5da51b1c83bbb866391bef9741ae" => :mavericks
+    sha256 "e3ad95292fe426fbf23faffed2e692fb841e0e17c70a2fc4d6d202b3b0d434c5" => :mountain_lion
   end
 
   keg_only "iojs conflicts with node (which is currently more established)"

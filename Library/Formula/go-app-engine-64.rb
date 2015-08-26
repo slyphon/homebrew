@@ -1,10 +1,11 @@
-require "formula"
-
 class GoAppEngine64 < Formula
   desc "Google App Engine SDK for Go!"
   homepage "https://cloud.google.com/appengine/docs/go/"
   url "https://storage.googleapis.com/appengine-sdks/featured/go_appengine_sdk_darwin_amd64-1.9.24.zip"
   sha256 "6a072ef4cdb0cc42d0b4a32494cbe1500d702208e345cef196b5878917df32f8"
+
+  conflicts_with "go-app-engine-32", :because => "multiple conflicting files"
+  conflicts_with "google-app-engine", :because => "multiple conflicting files"
 
   bottle do
     cellar :any
