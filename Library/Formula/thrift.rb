@@ -43,12 +43,14 @@ class Thrift < Formula
   option "with-perl", "Install Perl binding"
   option "with-php", "Install PHP binding"
   option "with-libevent", "Install nonblocking server libraries"
+  option "with-go", "Install Go bindings"
 
   depends_on "boost"
   depends_on "openssl"
   depends_on "libevent" => :optional
   depends_on :python => :optional
   depends_on "bison" => :build
+  depends_on "go" => :optional
 
   def install
     system "./bootstrap.sh" unless build.stable?
@@ -61,6 +63,7 @@ class Thrift < Formula
     exclusions << "--without-perl" if build.without? "perl"
     exclusions << "--without-php" if build.without? "php"
     exclusions << "--without-erlang" if build.without? "erlang"
+    exclusions << "--without-go" if build.without? "go"
 
     ENV.cxx11 if MacOS.version >= :mavericks && ENV.compiler == :clang
 
