@@ -16,7 +16,10 @@ module Homebrew
     ARGV.named.each do |name|
       if !File.exist?(name) && (name !~ HOMEBREW_CORE_FORMULA_REGEX) \
               && (name =~ HOMEBREW_TAP_FORMULA_REGEX || name =~ HOMEBREW_CASK_TAP_FORMULA_REGEX)
-        install_tap $1, $2
+        user = $1
+        repo = $2.sub(/^homebrew-/, "")
+        tap = Tap.fetch(user, repo)
+        tap.install unless tap.installed?
       end
     end unless ARGV.force?
 
@@ -75,14 +78,15 @@ module Homebrew
 
         if f.installed?
           msg = "#{f.full_name}-#{f.installed_version} already installed"
-          unless f.linked_keg.symlink?
-            if f.oldname && (HOMEBREW_CELLAR/f.oldname).exist?
-              msg << ", it's just not migrated"
-            elsif !f.keg_only?
-              msg << ", it's just not linked"
-            end
-          end
+          msg << ", it's just not linked" unless f.linked_keg.symlink? || f.keg_only?
           opoo msg
+        elsif f.oldname && (dir = HOMEBREW_CELLAR/f.oldname).directory? && !dir.subdirs.empty? \
+            && f.tap == Tab.for_keg(dir.subdirs.first).tap && !ARGV.force?
+          # Check if the formula we try to install is the same as installed
+          # but not migrated one. If --force passed then install anyway.
+          opoo "#{f.oldname} already installed, it's just not migrated"
+          puts "You can migrate formula with `brew migrate #{f}`"
+          puts "Or you can force install it with `brew install #{f} --force`"
         else
           formulae << f
         end
@@ -97,10 +101,36 @@ module Homebrew
       else
         ofail e.message
         query = query_regexp(e.name)
-        ohai "Searching formulae..."
-        puts_columns(search_formulae(query))
+
+        ohai "Searching for similarly named formulae..."
+        formulae_search_results = search_formulae(query)
+        case formulae_search_results.length
+        when 0
+          ofail "No similarly named formulae found."
+        when 1
+          puts "This similarly named formula was found:"
+          puts_columns(formulae_search_results)
+          puts "To install it, run:\n  brew install #{formulae_search_results.first}"
+        else
+          puts "These similarly named formulae were found:"
+          puts_columns(formulae_search_results)
+          puts "To install one of them, run (for example):\n  brew install #{formulae_search_results.first}"
+        end
+
         ohai "Searching taps..."
-        puts_columns(search_taps(query))
+        taps_search_results = search_taps(query)
+        case taps_search_results.length
+        when 0
+          ofail "No formulae found in taps."
+        when 1
+          puts "This formula was found in a tap:"
+          puts_columns(taps_search_results)
+          puts "To install it, run:\n  brew install #{taps_search_results.first}"
+        else
+          puts "These formulae were found in taps:"
+          puts_columns(taps_search_results)
+          puts "To install one of them, run (for example):\n  brew install #{taps_search_results.first}"
+        end
 
         # If they haven't updated in 48 hours (172800 seconds), that
         # might explain the error

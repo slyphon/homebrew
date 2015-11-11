@@ -2,10 +2,10 @@ class Keg
   PREFIX_PLACEHOLDER = "@@HOMEBREW_PREFIX@@".freeze
   CELLAR_PLACEHOLDER = "@@HOMEBREW_CELLAR@@".freeze
 
-  def fix_install_names(options = {})
+  def fix_install_names
     mach_o_files.each do |file|
       file.ensure_writable do
-        change_dylib_id(dylib_id_for(file, options), file) if file.dylib?
+        change_dylib_id(dylib_id_for(file), file) if file.dylib?
 
         each_install_name_for(file) do |bad_name|
           # Don't fix absolute paths unless they are rooted in the build directory
@@ -16,13 +16,22 @@ class Keg
         end
       end
     end
+
+    symlink_files.each do |file|
+      link = file.readlink
+      # Don't fix relative symlinks
+      next unless link.absolute?
+      if link.to_s.start_with?(HOMEBREW_CELLAR.to_s) || link.to_s.start_with?(HOMEBREW_PREFIX.to_s)
+        FileUtils.ln_sf(link.relative_path_from(file.parent), file)
+      end
+    end
   end
 
-  def relocate_install_names(old_prefix, new_prefix, old_cellar, new_cellar, options = {})
+  def relocate_install_names(old_prefix, new_prefix, old_cellar, new_cellar)
     mach_o_files.each do |file|
       file.ensure_writable do
         if file.dylib?
-          id = dylib_id_for(file, options).sub(old_prefix, new_prefix)
+          id = dylib_id_for(file).sub(old_prefix, new_prefix)
           change_dylib_id(id, file)
         end
 
@@ -37,7 +46,9 @@ class Keg
         end
       end
     end
+  end
 
+  def relocate_text_files(old_prefix, new_prefix, old_cellar, new_cellar)
     files = text_files | libtool_files
 
     files.group_by { |f| f.stat.ino }.each_value do |first, *rest|
@@ -98,8 +109,13 @@ class Keg
   end
 
   def install_name_tool(*args)
+    @require_install_name_tool = true
     tool = MacOS.install_name_tool
     system(tool, *args) || raise(ErrorDuringExecution.new(tool, args))
+  end
+
+  def require_install_name_tool?
+    !!@require_install_name_tool
   end
 
   # If file is a dylib or bundle itself, look for the dylib named by
@@ -132,18 +148,12 @@ class Keg
     dylibs.each(&block)
   end
 
-  def dylib_id_for(file, options)
+  def dylib_id_for(file)
     # The new dylib ID should have the same basename as the old dylib ID, not
     # the basename of the file itself.
     basename = File.basename(file.dylib_id)
     relative_dirname = file.dirname.relative_path_from(path)
-    shortpath = HOMEBREW_PREFIX.join(relative_dirname, basename)
-
-    if shortpath.exist? && !options[:keg_only]
-      shortpath.to_s
-    else
-      opt_record.join(relative_dirname, basename).to_s
-    end
+    opt_record.join(relative_dirname, basename).to_s
   end
 
   def find_dylib(name)
@@ -183,5 +193,14 @@ class Keg
       libtool_files << pn
     end if lib.directory?
     libtool_files
+  end
+
+  def symlink_files
+    symlink_files = []
+    path.find do |pn|
+      symlink_files << pn if pn.symlink?
+    end
+
+    symlink_files
   end
 end

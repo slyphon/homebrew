@@ -5,14 +5,14 @@ class Idris < Formula
 
   desc "Pure functional programming language with dependent types"
   homepage "http://www.idris-lang.org"
-  url "https://github.com/idris-lang/Idris-dev/archive/v0.9.18.1.tar.gz"
-  sha256 "ba09b15cb188e7e8ef8a9cb36aa0a847415cdaf36b26c3a95d8a2063d3373e34"
+  url "https://github.com/idris-lang/Idris-dev/archive/v0.9.20.tar.gz"
+  sha256 "e3865785c0449029e6ccfe8169ef71cf3c1384b30439b0444b2d8523717f3a29"
   head "https://github.com/idris-lang/Idris-dev.git"
 
   bottle do
-    sha256 "947b6f2391432a13a2fd8cf6584568a0e20c3822f3c61f0c2283b53555d04110" => :yosemite
-    sha256 "f957240b69b7a9af70e80370f41c0bfc98daca655e2a55330d53134ea6601081" => :mavericks
-    sha256 "402a3181054aa0d9e6058f5b7c23de758dd544148d97214268c95ce9b05f5928" => :mountain_lion
+    sha256 "12958bbed0ead212733100296b6b87dd147dbfa3b1aee92c588a7709f91c460d" => :el_capitan
+    sha256 "e0f61a40a1e810a86071d936fe64285fa9b275888c54445afe7e7593839f9705" => :yosemite
+    sha256 "1819af3d2f0c9188910848ae6581c1479671c2cc84ebb3d608d7c2c44eaae893" => :mavericks
   end
 
   depends_on "ghc" => :build
@@ -37,13 +37,22 @@ class Idris < Formula
       main : IO ()
       main = putStrLn "Hello, Homebrew!"
     EOS
+
+    (testpath/"ffi.idr").write <<-EOS.undent
+      module Main
+      puts: String -> IO ()
+      puts x = foreign FFI_C "puts" (String -> IO ()) x
+
+      main : IO ()
+      main = puts "Hello, interpreter!"
+    EOS
     shell_output "#{bin}/idris #{testpath}/hello.idr -o #{testpath}/hello"
     result = shell_output "#{testpath}/hello"
     assert_match /Hello, Homebrew!/, result
 
     if build.with? "libffi"
-      cmd = "#{bin}/idris --exec 'putStrLn {ffi=FFI_C} \"Hello, interpreter!\"'"
-      result = shell_output cmd
+      shell_output "#{bin}/idris #{testpath}/ffi.idr -o #{testpath}/ffi"
+      result = shell_output "#{testpath}/ffi"
       assert_match /Hello, interpreter!/, result
     end
   end

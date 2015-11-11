@@ -33,7 +33,7 @@ class FormulaTests < Homebrew::TestCase
     refute_predicate f, :any_version_installed?
     prefix = HOMEBREW_CELLAR+f.name+"0.1"
     prefix.mkpath
-    FileUtils.touch (prefix+Tab::FILENAME)
+    FileUtils.touch prefix+Tab::FILENAME
     assert_predicate f, :any_version_installed?
   ensure
     f.rack.rmtree
@@ -153,14 +153,6 @@ class FormulaTests < Homebrew::TestCase
     assert_nil Testball.new <=> Object.new
   end
 
-  def test_class_naming
-    assert_equal "ShellFm", Formulary.class_s("shell.fm")
-    assert_equal "Fooxx", Formulary.class_s("foo++")
-    assert_equal "SLang", Formulary.class_s("s-lang")
-    assert_equal "PkgConfig", Formulary.class_s("pkg-config")
-    assert_equal "FooBar", Formulary.class_s("foo_bar")
-  end
-
   def test_formula_spec_integration
     f = formula do
       homepage "http://example.com"
@@ -210,38 +202,6 @@ class FormulaTests < Homebrew::TestCase
   def test_path
     name = "foo-bar"
     assert_equal Pathname.new("#{HOMEBREW_LIBRARY}/Formula/#{name}.rb"), Formulary.core_path(name)
-  end
-
-  def test_factory
-    name = "foo-bar"
-    path = HOMEBREW_PREFIX+"Library/Formula/#{name}.rb"
-    path.dirname.mkpath
-    File.open(path, "w") do |f|
-      f << %(
-        class #{Formulary.class_s(name)} < Formula
-          url 'foo-1.0'
-        end
-            )
-    end
-    assert_kind_of Formula, Formulary.factory(name)
-  ensure
-    path.unlink
-  end
-
-  def test_factory_with_fully_qualified_name
-    name = "foo-bar"
-    path = HOMEBREW_PREFIX+"Library/Formula/#{name}.rb"
-    path.dirname.mkpath
-    File.open(path, "w") do |f|
-      f << %(
-        class #{Formulary.class_s(name)} < Formula
-          url 'foo-1.0'
-        end
-            )
-    end
-    assert_kind_of Formula, Formulary.factory("homebrew/homebrew/#{name}")
-  ensure
-    path.unlink
   end
 
   def test_class_specs_are_always_initialized

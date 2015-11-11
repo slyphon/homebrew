@@ -3,14 +3,14 @@ require "language/go"
 class Telegraf < Formula
   desc "Server-level metric gathering agent for InfluxDB"
   homepage "https://influxdb.com"
-  url "https://github.com/influxdb/telegraf/archive/v0.1.4.tar.gz"
-  sha256 "df586d0ada7e808b62ff476efd87c5a35e69a98bc45b3bf9823751cbccecc017"
+  url "https://github.com/influxdb/telegraf/archive/v0.2.0.tar.gz"
+  sha256 "f11d2f13b2370c91e3ec557d30f20d28da1bf4a4642b8871ccee50d6b361f8a4"
 
   bottle do
-    cellar :any
-    sha256 "2df489ade5c2c8d7dceab4912ec222e2b29d0eb86c8d698cbaa6a8952e82f04d" => :yosemite
-    sha256 "9e1afbd2f99e39dc784612590244875c13604009b0bb1a768ca4153617259787" => :mavericks
-    sha256 "ab551eda436b160eb872a36da91203c1739538ca4ad379ecfcae0c9017677a8b" => :mountain_lion
+    cellar :any_skip_relocation
+    sha256 "2b156c8e49a49550ec3a57a05c556d247f0edfd3043964e82c304dd0ee3dec7c" => :el_capitan
+    sha256 "4123089ead5c46a19d6caeb4ca725719fa8244d9d00dbba66e1ae2abc5b23fb4" => :yosemite
+    sha256 "2f56b0a38a64ab1bf0deef8d13d111fa939973e1497c9e9b838e0ea3cf5ce9b3" => :mavericks
   end
 
   depends_on "go" => :build

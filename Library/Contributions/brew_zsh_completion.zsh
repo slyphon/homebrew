@@ -40,6 +40,7 @@ _1st_arguments=(
   'config:show homebrew and system configuration'
   'create:create a new formula'
   'deps:list dependencies and dependants of a formula'
+  'desc:display a description of a formula'
   'doctor:audits your installation for common issues'
   'edit:edit a formula'
   'fetch:download formula resources to the cache'
@@ -50,6 +51,7 @@ _1st_arguments=(
   'reinstall:install a formula anew; re-using its current options'
   'leaves:show installed formulae that are not dependencies of another installed formula'
   'link:link a formula'
+  'linkapps:symlink .app bundles provided by formulae into /Applications'
   'list:list files in a formula or not-installed formulae'
   'log:git commit log for a formula'
   'missing:check all installed formuale for missing dependencies.'
@@ -68,6 +70,7 @@ _1st_arguments=(
   'test-bot:test a formula and build a bottle'
   'uninstall:uninstall a formula'
   'unlink:unlink a formula'
+  'unlinkapps:remove symlinked .app bundles provided by formulae from /Applications'
   'unpin:unpin specified formulae'
   'untap:remove a tapped repository'
   'update:fetch latest version of Homebrew and all formulae'
@@ -95,9 +98,18 @@ if (( CURRENT == 1 )); then
 fi
 
 case "$words[1]" in
-  install|reinstall|audit|home|homepage|log|info|abv|uses|cat|deps|edit|options|switch)
+  install|reinstall|audit|home|homepage|log|info|abv|uses|cat|deps|desc|edit|options|switch)
     _brew_all_formulae
     _wanted formulae expl 'all formulae' compadd -a formulae ;;
+  linkapps|unlinkapps)
+    _arguments \
+      '(--local)--local[operate on ~/Applications instead of /Applications]' \
+      '1: :->forms' && return 0
+
+    if [[ "$state" == forms ]]; then
+      _brew_installed_formulae
+      _wanted installed_formulae expl 'installed formulae' compadd -a installed_formulae
+    fi ;;
   list|ls)
     _arguments \
       '(--unbrewed)--unbrewed[files in brew --prefix not controlled by brew]' \

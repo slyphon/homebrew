@@ -117,10 +117,6 @@ class MigratorTests < Homebrew::TestCase
     assert_predicate @old_keg_record/"bin", :directory?
   end
 
-  def test_oldkeg_linked
-    assert_predicate @migrator, :oldkeg_linked?
-  end
-
   def test_repin
     @new_keg_record.join("bin").mkpath
     expected_relative = @new_keg_record.relative_path_from HOMEBREW_LIBRARY/"PinnedKegs"
@@ -188,7 +184,7 @@ class MigratorTests < Homebrew::TestCase
 
     assert_predicate @new_keg_record, :exist?
     assert_predicate @old_keg_record.parent, :symlink?
-    refute_predicate (HOMEBREW_LIBRARY/"LinkedKegs/oldname"), :exist?
+    refute_predicate HOMEBREW_LIBRARY/"LinkedKegs/oldname", :exist?
     assert_equal @new_keg_record.realpath, (HOMEBREW_LIBRARY/"LinkedKegs/newname").realpath
     assert_equal @new_keg_record.realpath, @old_keg_record.realpath
     assert_equal @new_keg_record.realpath, (HOMEBREW_PREFIX/"opt/oldname").realpath

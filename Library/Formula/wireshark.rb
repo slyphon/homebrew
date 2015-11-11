@@ -3,9 +3,9 @@ class Wireshark < Formula
   homepage "https://www.wireshark.org"
 
   stable do
-    url "https://www.wireshark.org/download/src/all-versions/wireshark-1.12.6.tar.bz2"
-    mirror "https://1.eu.dl.wireshark.org/src/wireshark-1.12.6.tar.bz2"
-    sha256 "22ac0cc872f12cef9bb2cacfe0720eed8533dc5cea102d21de511620606cb3b6"
+    url "https://www.wireshark.org/download/src/all-versions/wireshark-1.12.8.tar.bz2"
+    mirror "https://1.eu.dl.wireshark.org/src/wireshark-1.12.8.tar.bz2"
+    sha256 "357e0a4e49525d80cdc740bb16539fcdb526ad38cc2ed6cabedafc9bdee5c7e7"
 
     # Removes SDK checks that prevent the build from working on CLT-only systems
     # Reported upstream: https://bugs.wireshark.org/bugzilla/show_bug.cgi?id=9290
@@ -15,15 +15,15 @@ class Wireshark < Formula
   end
 
   bottle do
-    sha256 "6a0cf2653668e7c4f2838c5c7f9e3d025389b78e31afda50020b7876592a9f62" => :yosemite
-    sha256 "ca2db6e47b255c42c9426b4bb61cc9181f8eecb0d5dc0c1c7d3e08899977f735" => :mavericks
-    sha256 "1d98b70b4eef4833446659398090fde23d6647b7f11181ca488a0a38ec3bf71e" => :mountain_lion
+    sha256 "011b9c1f55fdb42223af49b7bec04f387d5dd89d5b8a600faecca2011b776f08" => :el_capitan
+    sha256 "2db41f691c2700bcb8bd20141671b279298cf65049966601f7d6ee96b4496482" => :yosemite
+    sha256 "7980680d82cb4c3bf01c6b8c1f3970767773d9a09d5573e3ba418fe08f224bb4" => :mavericks
   end
 
   devel do
-    url "https://www.wireshark.org/download/src/all-versions/wireshark-1.99.8.tar.bz2"
-    mirror "https://1.eu.dl.wireshark.org/src/wireshark-1.99.8.tar.bz2"
-    sha256 "6e03021a82cbc6b039210d37694ae51de101b7ffd4eb0e92a65ff84b4499e211"
+    url "https://www.wireshark.org/download/src/all-versions/wireshark-2.0.0rc2.tar.bz2"
+    mirror "https://1.eu.dl.wireshark.org/src/wireshark-2.0.0rc2.tar.bz2"
+    sha256 "b1d2139bd1e1b008337546059beece59e24387e7b96c3d691203f0ce1881b6c8"
 
     depends_on "homebrew/dupes/libpcap" if MacOS.version == :mavericks
   end
@@ -64,17 +64,24 @@ class Wireshark < Formula
   def install
     no_gui = build.without?("gtk+3") && build.without?("qt") && build.without?("gtk+") && build.without?("qt5")
 
-    args = ["--disable-dependency-tracking",
-            "--disable-silent-rules",
-            "--prefix=#{prefix}",
-            "--with-gnutls"]
+    args = %W[
+      --disable-dependency-tracking
+      --disable-silent-rules
+      --prefix=#{prefix}
+      --with-gnutls
+    ]
 
     args << "--disable-wireshark" if no_gui
     args << "--disable-gtktest" if build.without?("gtk+3") && build.without?("gtk+")
-    args << "--with-qt" if build.with?("qt") || build.with?("qt5")
     args << "--with-gtk3" if build.with? "gtk+3"
     args << "--with-gtk2" if build.with? "gtk+"
     args << "--with-libcap=#{Formula["libpcap"].opt_prefix}" if build.with? "libpcap"
+
+    if build.with?("qt") || build.with?("qt5")
+      args << "--with-qt"
+    else
+      args << "--with-qt=no"
+    end
 
     if build.head?
       args << "--disable-warnings-as-errors"

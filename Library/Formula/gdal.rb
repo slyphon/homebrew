@@ -1,14 +1,13 @@
 class Gdal < Formula
   desc "GDAL: Geospatial Data Abstraction Library"
   homepage "http://www.gdal.org/"
-  url "http://download.osgeo.org/gdal/1.11.2/gdal-1.11.2.tar.gz"
-  sha256 "66bc8192d24e314a66ed69285186d46e6999beb44fc97eeb9c76d82a117c0845"
-  revision 3
+  url "http://download.osgeo.org/gdal/1.11.3/gdal-1.11.3.tar.gz"
+  sha256 "561588bdfd9ca91919d4679a77a2b44214b158934ee8b425295ca5be33a1014d"
 
   bottle do
-    sha256 "ee6dd88dbf4c617673407efd4ff29507fc772d9cf1f6f3f33871fff9c7615191" => :yosemite
-    sha256 "92ea1a96742b8a85f3f6cc9856b75c7f719547069181221cd29b72653bb659d8" => :mavericks
-    sha256 "52587ccb0f9eb8d3c6560eb9ca0e3b01d215594644000edacea9a5db275a71e7" => :mountain_lion
+    sha256 "25ead0938b01c438fa792e80375bf318b58487f573f6ed97d62e619767f116de" => :el_capitan
+    sha256 "88454a52db92eeff63c4bbcfb3fef2bef930b07d43a83d51d95528638d96abb9" => :yosemite
+    sha256 "37615b0b4bc16b498b9efdddd17c50e3f0f7dbc617d571decc75bf55184354ac" => :mavericks
   end
 
   head do
@@ -29,11 +28,6 @@ class Gdal < Formula
   deprecated_option "enable-unsupported" => "with-unsupported"
   deprecated_option "enable-mdb" => "with-mdb"
   deprecated_option "complete" => "with-complete"
-
-  depends_on :python => :optional
-  if build.with? "python"
-    depends_on :fortran => :build
-  end
 
   depends_on "libpng"
   depends_on "jpeg"
@@ -80,7 +74,16 @@ class Gdal < Formula
   end
 
   depends_on :java => ["1.7+", :optional, :build]
-  depends_on "swig" if build.with? "swig-java"
+
+  if build.with? "swig-java"
+    depends_on "ant" => :build
+    depends_on "swig" => :build
+  end
+
+  option "without-python", "Build without python2 support"
+  depends_on :python => :optional if MacOS.version <= :snow_leopard
+  depends_on :python3 => :optional
+  depends_on :fortran => :build if build.with?("python") || build.with?("python3")
 
   # Extra linking libraries in configure test of armadillo may throw warning
   # see: https://trac.osgeo.org/gdal/ticket/5455
@@ -94,8 +97,8 @@ class Gdal < Formula
   end
 
   resource "numpy" do
-    url "https://downloads.sourceforge.net/project/numpy/NumPy/1.8.1/numpy-1.8.1.tar.gz"
-    sha256 "3d722fc3ac922a34c50183683e828052cd9bb7e9134a95098441297d7ea1c7a9"
+    url "https://pypi.python.org/packages/source/n/numpy/numpy-1.9.3.tar.gz"
+    sha256 "c3b74d3b9da4ceb11f66abd21e117da8cf584b63a0efbd01a9b7e91b693fbbd6"
   end
 
   resource "libkml" do
@@ -237,13 +240,6 @@ class Gdal < Formula
   end
 
   def install
-    if build.with? "python"
-      ENV.prepend_create_path "PYTHONPATH", libexec+"lib/python2.7/site-packages"
-      numpy_args = ["build", "--fcompiler=gnu95",
-                    "install", "--prefix=#{libexec}"]
-      resource("numpy").stage { system "python", "setup.py", *numpy_args }
-    end
-
     if build.with? "libkml"
       resource("libkml").stage do
         # See main `libkml` formula for info on patches
@@ -285,17 +281,18 @@ class Gdal < Formula
     system "make"
     system "make", "install"
 
-    # `python-config` may try to talk us into building bindings for more
-    # architectures than we really should.
-    if MacOS.prefer_64_bit?
-      ENV.append_to_cflags "-arch #{Hardware::CPU.arch_64_bit}"
-    else
-      ENV.append_to_cflags "-arch #{Hardware::CPU.arch_32_bit}"
-    end
-
-    cd "swig/python" do
-      system "python", "setup.py", "install", "--prefix=#{prefix}", "--record=installed.txt", "--single-version-externally-managed"
-      bin.install Dir["scripts/*"]
+    inreplace "swig/python/setup.cfg", /#(.*_dirs)/, "\\1"
+    Language::Python.each_python(build) do |python, python_version|
+      numpy_site_packages = buildpath/"homebrew-numpy/lib/python#{python_version}/site-packages"
+      numpy_site_packages.mkpath
+      ENV["PYTHONPATH"] = numpy_site_packages
+      resource("numpy").stage do
+        system python, *Language::Python.setup_install_args(buildpath/"homebrew-numpy")
+      end
+      cd "swig/python" do
+        system python, *Language::Python.setup_install_args(prefix)
+        bin.install Dir["scripts/*"] if python == "python"
+      end
     end
 
     if build.with? "swig-java"
@@ -304,6 +301,10 @@ class Gdal < Formula
         inreplace "java.opt", "#JAVA_HOME = /usr/lib/jvm/java-6-openjdk/", "JAVA_HOME=$(shell echo $$JAVA_HOME)"
         system "make"
         system "make", "install"
+
+        # Install the jar that complements the native JNI bindings
+        system "ant"
+        lib.install "gdal.jar"
       end
     end
 

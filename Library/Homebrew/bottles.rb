@@ -1,5 +1,4 @@
 require "tab"
-require "os/mac"
 require "extend/ARGV"
 
 def built_as_bottle?(f)
@@ -39,7 +38,7 @@ def bottle_tag
 end
 
 def bottle_receipt_path(bottle_file)
-  Utils.popen_read("tar", "-tzf", bottle_file, "*/*/INSTALL_RECEIPT.json").chomp
+  Utils.popen_read("/usr/bin/tar", "-tzf", bottle_file, "*/*/INSTALL_RECEIPT.json").chomp
 end
 
 def bottle_resolve_formula_names(bottle_file)

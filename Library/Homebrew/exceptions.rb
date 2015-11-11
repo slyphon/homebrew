@@ -23,11 +23,12 @@ class NoSuchKegError < RuntimeError
 end
 
 class FormulaValidationError < StandardError
-  attr_reader :attr
+  attr_reader :attr, :formula
 
-  def initialize(attr, value)
+  def initialize(formula, attr, value)
     @attr = attr
-    super "invalid attribute: #{attr} (#{value.inspect})"
+    @formula = formula
+    super "invalid attribute for formula '#{formula}': #{attr} (#{value.inspect})"
   end
 end
 
@@ -46,7 +47,7 @@ class FormulaUnavailableError < RuntimeError
   end
 
   def to_s
-    "No available formula for #{name} #{dependent_s}"
+    "No available formula with the name \"#{name}\" #{dependent_s}"
   end
 end
 
@@ -114,6 +115,18 @@ class TapUnavailableError < RuntimeError
 
     super <<-EOS.undent
       No available tap #{name}.
+    EOS
+  end
+end
+
+class TapAlreadyTappedError < RuntimeError
+  attr_reader :name
+
+  def initialize(name)
+    @name = name
+
+    super <<-EOS.undent
+      Tap #{name} already tapped.
     EOS
   end
 end
@@ -245,15 +258,14 @@ class BuildError < RuntimeError
       end
     end
     puts
-    unless RUBY_VERSION < "1.8.7" || issues.empty?
+    if RUBY_VERSION >= "1.8.7" && issues && issues.any?
       puts "These open issues may also help:"
       puts issues.map { |i| "#{i["title"]} #{i["html_url"]}" }.join("\n")
     end
 
-    if MacOS.version >= "10.11"
-      require "cmd/doctor"
-      opoo Checks.new.check_for_unsupported_osx
-    end
+    require "cmd/doctor"
+    unsupported_osx = Checks.new.check_for_unsupported_osx
+    opoo unsupported_osx if unsupported_osx
   end
 end
 
@@ -273,25 +285,25 @@ class BuildToolsError < RuntimeError
     if MacOS.version >= "10.10"
       xcode_text = <<-EOS.undent
         To continue, you must install Xcode from the App Store,
-              or the CLT by running:
-                xcode-select --install
+        or the CLT by running:
+          xcode-select --install
       EOS
     elsif MacOS.version == "10.9"
       xcode_text = <<-EOS.undent
         To continue, you must install Xcode from:
-                https://developer.apple.com/downloads/
-              or the CLT by running:
-                xcode-select --install
+          https://developer.apple.com/downloads/
+        or the CLT by running:
+          xcode-select --install
       EOS
     elsif MacOS.version >= "10.7"
       xcode_text = <<-EOS.undent
         To continue, you must install Xcode or the CLT from:
-                https://developer.apple.com/downloads/
+          https://developer.apple.com/downloads/
       EOS
     else
       xcode_text = <<-EOS.undent
         To continue, you must install Xcode from:
-                https://developer.apple.com/xcode/downloads/
+          https://developer.apple.com/xcode/downloads/
       EOS
     end
 
@@ -320,24 +332,24 @@ class BuildFlagsError < RuntimeError
     if MacOS.version >= "10.10"
       xcode_text = <<-EOS.undent
         or install Xcode from the App Store, or the CLT by running:
-                xcode-select --install
+          xcode-select --install
       EOS
     elsif MacOS.version == "10.9"
       xcode_text = <<-EOS.undent
         or install Xcode from:
-                https://developer.apple.com/downloads/
-              or the CLT by running:
-                xcode-select --install
+          https://developer.apple.com/downloads/
+        or the CLT by running:
+          xcode-select --install
       EOS
     elsif MacOS.version >= "10.7"
       xcode_text = <<-EOS.undent
         or install Xcode or the CLT from:
-                https://developer.apple.com/downloads/
+          https://developer.apple.com/downloads/
       EOS
     else
       xcode_text = <<-EOS.undent
         or install Xcode from:
-                https://developer.apple.com/xcode/downloads/
+          https://developer.apple.com/xcode/downloads/
       EOS
     end
 
