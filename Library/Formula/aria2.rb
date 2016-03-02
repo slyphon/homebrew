@@ -1,21 +1,23 @@
 class Aria2 < Formula
   desc "Download with resuming and segmented downloading"
   homepage "http://aria2.sourceforge.net/"
-  url "https://github.com/tatsuhiro-t/aria2/releases/download/release-1.19.2/aria2-1.19.2.tar.xz"
-  sha256 "3605486dd495cd8c2f672b7d0b763397989d831396862f15730697ebcf0ad53e"
+  url "https://github.com/tatsuhiro-t/aria2/releases/download/release-1.20.0/aria2-1.20.0.tar.xz"
+  sha256 "bf96344b6fee3aada0881ca008b077ea2c5dd820e8f8d693329481ecc7ff8fd0"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "4f86ad9fe0a36da39d9b92bfd13328f4be449f3b2ee8481a3ae1aa4563b478f4" => :el_capitan
-    sha256 "150f486de66ff284ab7491e22d9cc1b4b841904052d65b20a0b36af9833d7b45" => :yosemite
-    sha256 "40ce69ef73400de2cb5c2005b98bec28d4bcb64241eef3dbb548cef53b5ae20c" => :mavericks
+    sha256 "f6238cde6d6cdec0d8ced8cd97760b897bffda6d8d856d45dfa169bd358ac001" => :el_capitan
+    sha256 "2d0cf115454f179349bd7e540cb89faae0fcd8cb8e9f270888e4b743a51adf9b" => :yosemite
+    sha256 "0d8e36764f00d0068deabe5976f140cc3085e8f9627cd3719764225fec277429" => :mavericks
   end
 
   depends_on "pkg-config" => :build
+  depends_on "libssh2" => :optional
 
   needs :cxx11
 
   def install
+
     args = %W[
       --disable-dependency-tracking
       --prefix=#{prefix}
@@ -26,6 +28,8 @@ class Aria2 < Formula
       --without-libnettle
       --without-libgcrypt
     ]
+
+    args << "--with-libssh2" if build.with? "libssh2"
 
     system "./configure", *args
     system "make", "install"

@@ -1,8 +1,8 @@
 class Walkmod < Formula
   desc "Java-based project to apply and share code conventions"
   homepage "http://www.walkmod.com"
-  url "https://bitbucket.org/rpau/walkmod/downloads/walkmod-2.0.1-installer.zip"
-  sha256 "8790d3a8772db865d8653aff273a680ace8ea918d2afafaafa32f024077d8a93"
+  url "https://bitbucket.org/rpau/walkmod/downloads/walkmod-2.3.0-installer.zip"
+  sha256 "ad4f862bd9fac378d0241ca1471271fd6c09f871acb2e04bcc73b627b77d2865"
 
   bottle :unneeded
 
@@ -16,7 +16,7 @@ class Walkmod < Formula
   end
 
   test do
-    system "git", "clone", "--depth", "1", "https://github.com/rpau/walkmod-core.git"
+    system "git", "clone", "--depth", "1", "https://github.com/walkmod/walkmod-core.git"
     cd "walkmod-core"
     system bin/"walkmod", "check"
   end

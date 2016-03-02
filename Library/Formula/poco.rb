@@ -1,5 +1,5 @@
 class Poco < Formula
-  desc "POCO C++ Libraries"
+  desc "C++ class libraries for building network and internet-based applications"
   homepage "http://pocoproject.org/"
   url "http://pocoproject.org/releases/poco-1.6.1/poco-1.6.1-all.tar.gz"
   sha256 "88c88ff0916228d3a011b86c486033dab75e62a27429b5d35736d43527cf5b44"
@@ -15,6 +15,7 @@ class Poco < Formula
 
   option :cxx11
   option :universal
+  option "with-static", "Build static libraries (instead of shared)"
 
   depends_on "openssl"
   depends_on "cmake" => :build
@@ -29,6 +30,8 @@ class Poco < Formula
       ENV.universal_binary
       args << "-DCMAKE_OSX_ARCHITECTURES=#{Hardware::CPU.universal_archs.as_cmake_arch_flags}"
     end
+
+    args << "-DPOCO_STATIC=ON" if build.with? "static"
 
     if build.stable?
       # Fix Foundation library version (already fixed upstream).

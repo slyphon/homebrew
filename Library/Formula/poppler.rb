@@ -1,13 +1,13 @@
 class Poppler < Formula
   desc "PDF rendering library (based on the xpdf-3.0 code base)"
-  homepage "http://poppler.freedesktop.org"
-  url "http://poppler.freedesktop.org/poppler-0.37.0.tar.xz"
-  sha256 "b89f9c5eae3bbb1046b0f767714afd75eca102a0406a3a30856778d42a685bee"
+  homepage "https://poppler.freedesktop.org/"
+  url "https://poppler.freedesktop.org/poppler-0.41.0.tar.xz"
+  sha256 "420abaab63caed9e1ee28964a0ba216d1979506726164bc99ad5ade289192a1b"
 
   bottle do
-    sha256 "82185b06f6cd82b6e84f5a8e999a76222a103590bd1aaaf811f24c6985f6db5c" => :el_capitan
-    sha256 "39e85a3e31e1eb53051939e83be74a1f8edc957384479ea4b0fff75585bc754e" => :yosemite
-    sha256 "be4351a0bb787d2571be314091f8fd8c1a6cac80f3dd4360f63dbf3781f8e676" => :mavericks
+    sha256 "cc7172f9b672b09f52140463ac3ac574f79dc83015e2d927cf3abe8b225da6a3" => :el_capitan
+    sha256 "3771644309b386fd69a6678167b73849d718624b7a64c5bdf06e5d5abaf9d8ac" => :yosemite
+    sha256 "df5160db16962c5bbf2a64d352b0fe5ff5e07213b44b5e01cc140bbfda297958" => :mavericks
   end
 
   option "with-qt", "Build Qt backend"
@@ -36,7 +36,7 @@ class Poppler < Formula
   conflicts_with "pdftohtml", :because => "both install `pdftohtml` binaries"
 
   resource "font-data" do
-    url "http://poppler.freedesktop.org/poppler-data-0.4.7.tar.gz"
+    url "https://poppler.freedesktop.org/poppler-data-0.4.7.tar.gz"
     sha256 "e752b0d88a7aba54574152143e7bf76436a7ef51977c55d6bd9a48dccde3a7de"
   end
 

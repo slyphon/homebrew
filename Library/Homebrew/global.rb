@@ -41,12 +41,14 @@ module Homebrew
   alias_method :failed?, :failed
 end
 
+HOMEBREW_PULL_API_REGEX = %r{https://api\.github\.com/repos/([\w-]+)/homebrew(-[\w-]+)?/pulls/(\d+)}
 HOMEBREW_PULL_OR_COMMIT_URL_REGEX = %r[https://github\.com/([\w-]+)/homebrew(-[\w-]+)?/(?:pull/(\d+)|commit/[0-9a-fA-F]{4,40})]
 
 require "compat" unless ARGV.include?("--no-compat") || ENV["HOMEBREW_NO_COMPAT"]
 
 ORIGINAL_PATHS = ENV["PATH"].split(File::PATH_SEPARATOR).map { |p| Pathname.new(p).expand_path rescue nil }.compact.freeze
 
+# TODO: remove this as soon as it's removed from commands.rb.
 HOMEBREW_INTERNAL_COMMAND_ALIASES = {
   "ls" => "list",
   "homepage" => "home",

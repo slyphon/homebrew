@@ -1,14 +1,14 @@
 class Nss < Formula
   desc "Libraries for security-enabled client and server applications"
   homepage "https://developer.mozilla.org/docs/NSS"
-  url "https://archive.mozilla.org/pub/mozilla.org/security/nss/releases/NSS_3_20_1_RTM/src/nss-3.20.1.tar.gz"
-  sha256 "ad3c8f11dfd9570c2d04a6140d5ef7c2bdd0fe30d6c9e5548721a4251a5e8c97"
+  url "https://archive.mozilla.org/pub/security/nss/releases/NSS_3_22_1_RTM/src/nss-3.22.1.tar.gz"
+  sha256 "89e1fc7074e5c325962821289f4cd7d8207ae95af2308ba881215ed9ca68fa4f"
 
   bottle do
     cellar :any
-    sha256 "bce5caa3a0cf836a67b21570e1890c58cba188b6119522a4d455399e01c89620" => :el_capitan
-    sha256 "8d1d946335844f94f242eebef9b1d315414cab1296156803637dc1584fcfcaf7" => :yosemite
-    sha256 "af66e34283ee6d07dd7c4b8bcf8d987a3af2ee2dd75b816bd7935de31379af21" => :mavericks
+    sha256 "04ea7510ff7344e919aa9c8f364351836105384f501e25e5a41752e043132c2c" => :el_capitan
+    sha256 "e15b903eb7ad330dfbdcd45702344129c3915d92bd04a73775fb8ff5262b0e7c" => :yosemite
+    sha256 "dce9b042e44b027455c1a9e34092a2511a7ca0c24f1f88c2a426e875292429b0" => :mavericks
   end
 
   keg_only <<-EOS.undent
@@ -97,7 +97,7 @@ class Nss < Formula
     Name: NSS
     Description: Mozilla Network Security Services
     Version: #{version}
-    Requires: nspr >= 4.10.10
+    Requires: nspr >= 4.12
     Libs: -L${libdir} -lnss3 -lnssutil3 -lsmime3 -lssl3
     Cflags: -I${includedir}
     EOS

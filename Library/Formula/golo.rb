@@ -1,8 +1,14 @@
 class Golo < Formula
   desc "Lightweight dynamic language for the JVM"
   homepage "http://golo-lang.org"
-  url "https://www.eclipse.org/downloads/download.php?file=/golo/golo-3.0.0-incubation.zip"
+  url "https://bintray.com/artifact/download/golo-lang/downloads/golo-3.0.0-incubation.zip"
   sha256 "e7d350148a3a7492348f0214679b282858ced58e4063a17bbf53f9ec2ae5f288"
+
+  devel do
+    url "https://bintray.com/artifact/download/golo-lang/downloads/golo-incubation-3.1.0-M2.zip"
+    sha256 "ffc8789c23c5d38fed3da246ec0741d9fc265a5d51d56b75a56046264ef90975"
+    version "3.1.0-incubation-M2"
+  end
 
   head do
     url "https://github.com/eclipse/golo-lang.git"

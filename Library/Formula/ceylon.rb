@@ -1,8 +1,8 @@
 class Ceylon < Formula
   desc "Programming language for writing large programs in teams"
   homepage "http://ceylon-lang.org/"
-  url "http://ceylon-lang.org/download/dist/1_2_0"
-  sha256 "2e3b50e3e80ea3a356d0d62a2cff5b59104c591aa06387e55cd34a10d52c2919"
+  url "http://ceylon-lang.org/download/dist/1_2_1"
+  sha256 "08379f76e5ce2db01f015efbfde05ecc7c8a8244441459eb7c4ea830eabaa1bb"
 
   bottle :unneeded
 
@@ -21,11 +21,12 @@ class Ceylon < Formula
   end
 
   test do
-    ENV["_JAVA_OPTIONS"] = "-Duser.home=#{testpath}"
+    ENV.java_cache
+
     cd "#{libexec}/samples/helloworld" do
       system "#{bin}/ceylon", "compile", "--out", "#{testpath}/modules", "--encoding", "UTF-8", "com.example.helloworld"
       system "#{bin}/ceylon", "doc", "--out", "#{testpath}/modules", "--encoding", "UTF-8", "--non-shared", "com.example.helloworld"
-      system "#{bin}/ceylon", "run", "--rep", "#{testpath}/modules", "com.example.helloworld/1.2.0", "John"
+      system "#{bin}/ceylon", "run", "--rep", "#{testpath}/modules", "com.example.helloworld/1.2.1", "John"
     end
   end
 end

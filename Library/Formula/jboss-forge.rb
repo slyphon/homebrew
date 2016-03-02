@@ -8,9 +8,9 @@ class JbossForge < Formula
   bottle :unneeded
 
   devel do
-    url "https://downloads.jboss.org/forge/releases/3.0.0.Alpha1/forge-distribution-3.0.0.Alpha1-offline.zip"
-    version "3.0.0.Alpha1"
-    sha256 "81d4ecafd3f555b81c139ab9c56ed79104714678bc47c5703ddb2875628afb1e"
+    url "https://downloads.jboss.org/forge/releases/3.0.0.CR1/forge-distribution-3.0.0.CR1-offline.zip"
+    version "3.0.0.CR1"
+    sha256 "2297478830ea01e69eb07122065d5760c7fd27b27668b1aa7e01e0d9e4e07458"
   end
 
   def install
